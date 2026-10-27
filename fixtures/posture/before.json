@@ -1,0 +1,166 @@
+{
+  "Findings": [
+    {
+      "Compliance": {
+        "Status": "FAILED"
+      },
+      "Id": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/S3.2/finding/00000000-0000-4000-8000-000000000001",
+      "Resources": [
+        {
+          "Id": "arn:aws:s3:::example-resource-1"
+        }
+      ],
+      "Severity": {
+        "Label": "CRITICAL"
+      },
+      "Title": "S3.2 S3 buckets should prohibit public read access",
+      "Workflow": {
+        "Status": "NEW"
+      }
+    },
+    {
+      "Compliance": {
+        "Status": "FAILED"
+      },
+      "Id": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/EC2.13/finding/00000000-0000-4000-8000-000000000002",
+      "Resources": [
+        {
+          "Id": "arn:aws:s3:::example-resource-2"
+        }
+      ],
+      "Severity": {
+        "Label": "CRITICAL"
+      },
+      "Title": "EC2.13 Security groups should not allow ingress from 0.0.0.0/0 to port 22",
+      "Workflow": {
+        "Status": "NEW"
+      }
+    },
+    {
+      "Compliance": {
+        "Status": "FAILED"
+      },
+      "Id": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/IAM.1/finding/00000000-0000-4000-8000-000000000010",
+      "Resources": [
+        {
+          "Id": "arn:aws:s3:::example-resource-10"
+        }
+      ],
+      "Severity": {
+        "Label": "HIGH"
+      },
+      "Title": "IAM.1 IAM policies should not allow full administrative privileges",
+      "Workflow": {
+        "Status": "NEW"
+      }
+    },
+    {
+      "Compliance": {
+        "Status": "FAILED"
+      },
+      "Id": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/IAM.6/finding/00000000-0000-4000-8000-000000000011",
+      "Resources": [
+        {
+          "Id": "arn:aws:s3:::example-resource-11"
+        }
+      ],
+      "Severity": {
+        "Label": "HIGH"
+      },
+      "Title": "IAM.6 Hardware MFA should be enabled for the root user",
+      "Workflow": {
+        "Status": "NEW"
+      }
+    },
+    {
+      "Compliance": {
+        "Status": "FAILED"
+      },
+      "Id": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/S3.5/finding/00000000-0000-4000-8000-000000000012",
+      "Resources": [
+        {
+          "Id": "arn:aws:s3:::example-resource-12"
+        }
+      ],
+      "Severity": {
+        "Label": "HIGH"
+      },
+      "Title": "S3.5 S3 buckets should require requests to use TLS",
+      "Workflow": {
+        "Status": "NEW"
+      }
+    },
+    {
+      "Compliance": {
+        "Status": "FAILED"
+      },
+      "Id": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/S3.1/finding/00000000-0000-4000-8000-000000000013",
+      "Resources": [
+        {
+          "Id": "arn:aws:s3:::example-resource-13"
+        }
+      ],
+      "Severity": {
+        "Label": "HIGH"
+      },
+      "Title": "S3.1 S3 general purpose buckets should have block public access settings enabled",
+      "Workflow": {
+        "Status": "NEW"
+      }
+    },
+    {
+      "Compliance": {
+        "Status": "FAILED"
+      },
+      "Id": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/EC2.2/finding/00000000-0000-4000-8000-000000000014",
+      "Resources": [
+        {
+          "Id": "arn:aws:s3:::example-resource-14"
+        }
+      ],
+      "Severity": {
+        "Label": "HIGH"
+      },
+      "Title": "EC2.2 The VPC default security group should not allow inbound and outbound traffic",
+      "Workflow": {
+        "Status": "NEW"
+      }
+    },
+    {
+      "Compliance": {
+        "Status": "FAILED"
+      },
+      "Id": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/CloudTrail.1/finding/00000000-0000-4000-8000-000000000015",
+      "Resources": [
+        {
+          "Id": "arn:aws:s3:::example-resource-15"
+        }
+      ],
+      "Severity": {
+        "Label": "HIGH"
+      },
+      "Title": "CloudTrail.1 CloudTrail should be enabled and configured with at least one multi-Region trail",
+      "Workflow": {
+        "Status": "NEW"
+      }
+    },
+    {
+      "Compliance": {
+        "Status": "FAILED"
+      },
+      "Id": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/KMS.4/finding/00000000-0000-4000-8000-000000000016",
+      "Resources": [
+        {
+          "Id": "arn:aws:s3:::example-resource-16"
+        }
+      ],
+      "Severity": {
+        "Label": "HIGH"
+      },
+      "Title": "KMS.4 KMS key rotation should be enabled",
+      "Workflow": {
+        "Status": "NEW"
+      }
+    }
+  ]
+}

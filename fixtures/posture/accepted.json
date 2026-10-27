@@ -1,0 +1,29 @@
+{
+  "accepted": [
+    {
+      "acceptedOn": "2026-10-22",
+      "findingId": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/S3.5/finding/00000000-0000-4000-8000-000000000012",
+      "reason": "Sandbox bucket holds no data and is deleted the same day."
+    },
+    {
+      "acceptedOn": "2026-10-22",
+      "findingId": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/S3.1/finding/00000000-0000-4000-8000-000000000013",
+      "reason": "No workload serves traffic from this account."
+    },
+    {
+      "acceptedOn": "2026-10-22",
+      "findingId": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/EC2.2/finding/00000000-0000-4000-8000-000000000014",
+      "reason": "The drill bucket is public on purpose; see the exception in the review."
+    },
+    {
+      "acceptedOn": "2026-10-22",
+      "findingId": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/CloudTrail.1/finding/00000000-0000-4000-8000-000000000015",
+      "reason": "A sandbox account has no multi-Region workload."
+    },
+    {
+      "acceptedOn": "2026-10-22",
+      "findingId": "arn:aws:securityhub:eu-west-1:000000000000:subscription/aws-foundational-security-best-practices/v/1.0.0/KMS.4/finding/00000000-0000-4000-8000-000000000016",
+      "reason": "Key is deleted with the sandbox."
+    }
+  ]
+}
