@@ -1,0 +1,30 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    name: Lint, unit tests, policy tests, credential-free plans, detection replay, dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.17.0"
+          terraform_wrapper: false
+      - uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.65.0
+      - uses: open-policy-agent/setup-opa@v2
+        with:
+          version: 1.21.4
+      - run: pipx install checkov==3.3.30
+      - run: make lint
+      - run: make test
+      - run: make validate
+      - run: make demo-drill
+      - run: make audit
+      - run: make test-e2e
