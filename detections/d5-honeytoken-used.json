@@ -1,0 +1,29 @@
+{
+  "id": "D5",
+  "title": "honeytoken used",
+  "severity": "critical",
+  "description": "A credential that no workload should ever use was used. Any call with it, allowed or denied, is an intruder.",
+  "firstStep": "Treat as a confirmed compromise; find the source address and every other call from it",
+  "prevention": "Nothing to prevent: the honeytoken has no permissions. Keep its key out of every place a workload reads.",
+  "deployTo": [
+    "global"
+  ],
+  "parameters": [
+    "__HONEYTOKEN_ACCESS_KEY_ID__"
+  ],
+  "parameterVariables": {
+    "__HONEYTOKEN_ACCESS_KEY_ID__": "honeytoken_access_key_id"
+  },
+  "pattern": {
+    "detail-type": [
+      "AWS API Call via CloudTrail"
+    ],
+    "detail": {
+      "userIdentity": {
+        "accessKeyId": [
+          "__HONEYTOKEN_ACCESS_KEY_ID__"
+        ]
+      }
+    }
+  }
+}

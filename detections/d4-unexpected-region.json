@@ -1,0 +1,27 @@
+{
+  "id": "D4",
+  "title": "unexpected Region",
+  "severity": "medium",
+  "description": "Any API call, read-only calls included, in a Region outside the list the account operates in. The rule only sees events in the Region it is deployed to, so it is deployed to each watched Region; the log scanner covers all Regions.",
+  "firstStep": "Check what was created; stop it",
+  "prevention": "Deny every action outside the allowed Regions with a service control policy on aws:RequestedRegion.",
+  "deployTo": [
+    "watch"
+  ],
+  "includeReadOnly": true,
+  "pattern": {
+    "detail-type": [
+      "AWS API Call via CloudTrail"
+    ],
+    "detail": {
+      "awsRegion": [
+        {
+          "anything-but": [
+            "eu-west-1",
+            "us-east-1"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "D3",
+  "title": "broad privilege grant",
+  "severity": "critical",
+  "description": "The AdministratorAccess managed policy was attached to a user, role or group.",
+  "firstStep": "Detach; find the caller",
+  "prevention": "Deny attaching AdministratorAccess to anyone but the break-glass role, with a permissions boundary or a service control policy.",
+  "deployTo": [
+    "global"
+  ],
+  "pattern": {
+    "source": [
+      "aws.iam"
+    ],
+    "detail-type": [
+      "AWS API Call via CloudTrail"
+    ],
+    "detail": {
+      "eventSource": [
+        "iam.amazonaws.com"
+      ],
+      "eventName": [
+        "AttachUserPolicy",
+        "AttachRolePolicy",
+        "AttachGroupPolicy"
+      ],
+      "requestParameters": {
+        "policyArn": [
+          "arn:aws:iam::aws:policy/AdministratorAccess"
+        ]
+      }
+    }
+  }
+}

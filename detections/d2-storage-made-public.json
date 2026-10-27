@@ -1,0 +1,64 @@
+{
+  "id": "D2",
+  "title": "storage made public",
+  "severity": "critical",
+  "description": "A bucket policy or ACL changed, or a Block Public Access setting was removed or switched off.",
+  "firstStep": "Re-block; check what was exposed",
+  "prevention": "Turn on Block Public Access for the whole account, so a public policy or ACL cannot succeed in the first place.",
+  "deployTo": [
+    "home"
+  ],
+  "pattern": {
+    "source": [
+      "aws.s3"
+    ],
+    "detail-type": [
+      "AWS API Call via CloudTrail"
+    ],
+    "detail": {
+      "eventSource": [
+        "s3.amazonaws.com"
+      ],
+      "$or": [
+        {
+          "eventName": [
+            "PutBucketPolicy",
+            "PutBucketAcl",
+            "DeletePublicAccessBlock"
+          ]
+        },
+        {
+          "eventName": [
+            "PutPublicAccessBlock"
+          ],
+          "requestParameters": {
+            "PublicAccessBlockConfiguration": {
+              "$or": [
+                {
+                  "BlockPublicAcls": [
+                    false
+                  ]
+                },
+                {
+                  "IgnorePublicAcls": [
+                    false
+                  ]
+                },
+                {
+                  "BlockPublicPolicy": [
+                    false
+                  ]
+                },
+                {
+                  "RestrictPublicBuckets": [
+                    false
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

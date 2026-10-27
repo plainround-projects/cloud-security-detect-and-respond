@@ -1,0 +1,9 @@
+ALERT {id}: {title}
+severity: {severity}
+time:     <time>
+who:      <who>
+what:     <source> <name> <params>
+from:     <ip> (user agent <agent>)
+region:   <region>
+event:    <event_id>
+first step: {first_step}
