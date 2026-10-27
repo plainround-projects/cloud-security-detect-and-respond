@@ -139,6 +139,7 @@ infra/
   environments/security/ the security account: the archive. environments/workload/: the trail, detections, posture, drill, budget.
 policy/                  detection.rego and detection_test.rego: the OPA rules and a deny and an allow test for each.
 docs/                    DETECTIONS.md, REHEARSAL_REVIEW.md (generated), RUNBOOK.md, posture-acceptances.json, adr/.
+tech/                    one beginner-level note per technology used here (Python, Terraform, OPA, the AWS services, Bash, ...), starting at tech/README.md.
 fixtures/                drill/ (the synthetic archive: log files, a digest, alerts.json) and posture/ (findings and accepted risks).
 scripts/                 the account runbook 01 to 10 and lib.sh; make_drill_fixtures.py writes fixtures/ deterministically.
 tests/
