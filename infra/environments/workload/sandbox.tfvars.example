@@ -1,0 +1,8 @@
+# Copy to sandbox.auto.tfvars (ignored by git) and fill in. scripts/02-deploy-workload.sh does this for you.
+workload_account_id = "REPLACE_WITH_THE_WORKLOAD_ACCOUNT_ID"
+log_bucket_name     = "REPLACE_WITH_OUTPUT_log_bucket_name_OF_THE_SECURITY_ENVIRONMENT"
+log_key_arn         = "REPLACE_WITH_OUTPUT_log_key_arn_OF_THE_SECURITY_ENVIRONMENT"
+alert_email         = "REPLACE_WITH_YOUR_ADDRESS"
+force_destroy       = true # the sandbox is deleted the same day
+enable_drill        = false # true only while the incident drill runs
+# honeytoken_access_key_id = "AKIA..." # set after scripts/06-honeytoken.sh, then apply again to deploy D5

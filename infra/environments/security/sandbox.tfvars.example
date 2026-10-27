@@ -1,0 +1,5 @@
+# Copy to sandbox.auto.tfvars (ignored by git) and fill in. scripts/01-deploy-security.sh does this for you.
+security_account_id = "REPLACE_WITH_THE_SECURITY_ACCOUNT_ID"
+workload_account_id = "REPLACE_WITH_THE_WORKLOAD_ACCOUNT_ID"
+retention_days      = 1 # compliance mode: nobody, including you, can shorten it
+expire_days         = 2 # the bucket can be destroyed once the files have expired
