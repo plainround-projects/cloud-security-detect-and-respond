@@ -21,7 +21,9 @@ TFLint parses the Terraform files itself. It loads the rulesets as separate plug
 
 ## Walkthrough of this repository's use
 
-From `.tflint.hcl`:
+TFLint is a **linter for Terraform**: it reads the `.tf` files and reports mistakes that `terraform validate` does not catch. It is configured by one file, `.tflint.hcl`, written in the same HCL language as the Terraform code ([terraform.md](terraform.md)). In HCL, a **block** has a type, optional quoted labels, and a body in curly braces; the body holds `name = value` lines called **attributes**. Every line of the file is shown below.
+
+From `.tflint.hcl` (lines 1 to 3):
 
 ```hcl
 config {
@@ -29,9 +31,9 @@ config {
 }
 ```
 
-`call_module_type = "local"` makes TFLint also check the modules the configuration calls when they are local folders (all of this repository's modules are).
+A block of type `config` with no label: TFLint's own settings. `call_module_type = "local"` controls which **modules** (reusable folders of Terraform) TFLint looks inside when a configuration calls them. `"local"` means "check the modules that are folders in this repository", which is every module here. The other choices would also follow modules downloaded from the internet, which this repository does not use.
 
-From `.tflint.hcl`:
+From `.tflint.hcl` (lines 5 to 8):
 
 ```hcl
 plugin "terraform" {
@@ -40,9 +42,9 @@ plugin "terraform" {
 }
 ```
 
-The built-in ruleset for general Terraform hygiene. The `recommended` preset turns on the rules the TFLint authors suggest, including `terraform_typed_variables` (every variable has a `type`) and `terraform_unused_declarations` (a variable or local that nothing uses is reported). It does not demand a description on every variable; the modules here carry descriptions by convention.
+A block of type `plugin` with the label `"terraform"`: this switches on the **built-in ruleset** for general Terraform hygiene (it ships inside TFLint, so it needs no download). `enabled = true` turns it on. `preset = "recommended"` chooses the group of rules that the ruleset's authors recommend, instead of every rule or none. Two of the rules in that group are the ones this repository meets daily: `terraform_typed_variables` reports a `variable` block that has no `type`, and `terraform_unused_declarations` reports a variable or local value that nothing uses. (The "Try it yourself" section shows the second one firing.) The group does not require a description on every variable; this repository adds descriptions by convention.
 
-From `.tflint.hcl`:
+From `.tflint.hcl` (lines 10 to 14):
 
 ```hcl
 plugin "aws" {
@@ -52,18 +54,16 @@ plugin "aws" {
 }
 ```
 
-The AWS ruleset: it knows the valid values for AWS resource arguments. `version` pins it so everyone gets the same rules; `source` says where `tflint --init` downloads it from.
+A second `plugin` block, labeled `"aws"`: the **AWS ruleset**, which knows the valid values of AWS resource arguments (for example it can tell that an instance type does not exist). It is not built in, so three attributes say how to get it. `enabled = true` turns it on. `version = "0.38.0"` pins the exact release, so every machine and the CI run the same rules. `source = "github.com/terraform-linters/tflint-ruleset-aws"` is where `tflint --init` downloads it from. Because the plug-in is downloaded, `make lint` runs `tflint --init` before the check.
 
-From `Makefile`:
+From `Makefile` (lines 41 to 42):
 
 ```make
 	tflint --init
 	tflint --recursive --config $(CURDIR)/.tflint.hcl
 ```
 
-`--init` installs the plug-ins. `--recursive` checks every folder that contains Terraform files (the environment and each module). `--config` points at the file with an absolute path, because TFLint changes folders while recursing.
-
-TFLint prints nothing when it finds nothing, and exits 0. That is why every module in this repository has typed and described variables and outputs.
+These two lines in `make lint` run TFLint. `tflint --init` downloads the plug-ins named in `.tflint.hcl` (only the AWS ruleset). `tflint --recursive --config $(CURDIR)/.tflint.hcl` lints every folder that contains Terraform files: `--recursive` descends into the environment folders and each module folder. `--config` names the settings file, and `$(CURDIR)` (the current folder, supplied by `make`) makes the path absolute, because TFLint changes into each folder while it recurses and a relative path would then be wrong. TFLint prints nothing and exits 0 when it finds nothing, so `make lint` continues; any finding makes it exit with a non-zero code and `make` stops.
 
 ## Try it yourself
 

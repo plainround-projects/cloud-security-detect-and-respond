@@ -22,30 +22,35 @@ ShellCheck parses the script the way bash would, then applies a few hundred rule
 
 ## Walkthrough of this repository's use
 
-From `.shellcheckrc`:
+ShellCheck is a **static analyzer**: it reads a shell script as text, without running it, and reports lines that are probably wrong or fragile. Each finding has a code that starts with `SC` and a number (for example `SC2086`), a severity, the line, and an explanation. The repository uses ShellCheck in three places, and each one is shown below with every line.
+
+From `.shellcheckrc` (lines 1 to 2):
 
 ```text
 external-sources=true
 source-path=SCRIPTDIR
 ```
 
-Every runbook script begins with `source "$(dirname "$0")/lib.sh"`. By default ShellCheck does not read the file you `source`, so it cannot know which functions exist. `external-sources=true` allows it to follow, and `source-path=SCRIPTDIR` says "look in the folder of the script being checked".
+`.shellcheckrc` is ShellCheck's settings file. It is read from the repository's top folder every time ShellCheck runs. A line is `name=value`.
 
-From `scripts/lib.sh`:
+- `external-sources=true`: every numbered script begins with `source "$(dirname "$0")/lib.sh"`, which loads the helper file. By default ShellCheck does not read files that a script loads, so it cannot know which functions and variables exist and would warn about them. This setting allows it to follow the `source` line and read the helper.
+- `source-path=SCRIPTDIR`: tells ShellCheck where to look for the file named in a `source` line. `SCRIPTDIR` is a special value that means "the folder of the script being checked", which is exactly where `lib.sh` lives.
+
+From `scripts/lib.sh` (line 2):
 
 ```bash
 # shellcheck disable=SC2034
 ```
 
-`SC2034` means "this variable appears unused". `lib.sh` sets variables (`REGION`, `ENV_DIR`, ...) that only the scripts that source it use, so ShellCheck cannot see the use. The directive is on the second line of the file and applies to the whole file. Nothing else in `scripts/` is silenced.
+This is a **directive**: a comment that starts with `shellcheck` is an instruction to ShellCheck, not text for people. `disable=SC2034` switches off one rule for the rest of the file. `SC2034` means "this variable appears to be unused". `lib.sh` assigns 10 variables (`ROOT`, `EVIDENCE_DIR`, `SECURITY_ENV`, `WORKLOAD_ENV`, `REGION`, `TF`, `PY`, `DRILL_ROLE`, `DRILL_USER`, `SESSION_NAME`) that are used only by the scripts that load it; when ShellCheck reads `lib.sh` on its own, it sees assignments that nothing reads, and would warn about every one. The directive sits on the second line of the file, directly under the shebang, so it applies to the whole file. It is the only directive in the repository: no script silences anything else.
 
-From `Makefile`:
+From `Makefile` (line 46):
 
 ```make
 	shellcheck scripts/*.sh
 ```
 
-The shell expands `scripts/*.sh` to the list of files. The command exits non-zero if any rule fires, and `make lint` stops.
+`make lint` runs ShellCheck on every script: `shellcheck scripts/*.sh`. The `*` is a **wildcard**: before `shellcheck` starts, the shell replaces `scripts/*.sh` with the list of all matching file names, here 11 files: `01-deploy-security.sh`, `02-deploy-workload.sh`, `03-verify-archive.sh`, `04-drill-setup.sh`, `05-posture-baseline.sh`, `06-honeytoken.sh`, `07-drill-attack.sh`, `08-contain.sh`, `09-collect-and-measure.sh`, `10-teardown.sh`, `lib.sh`. ShellCheck exits with a non-zero code if any rule fires, so `make` stops and `make lint` fails; it prints nothing and exits 0 when all is well. The Python helper script in the same folder (`make_drill_fixtures.py`) is not a shell script; it is checked by [ruff](ruff.md) and [mypy](mypy.md) instead.
 
 ## Try it yourself
 
