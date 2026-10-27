@@ -68,7 +68,7 @@ The repository is detection and response for a cloud account: detections written
 | [bash.md](bash.md) | the runbook scripts under `scripts/` |
 | [unix-tools.md](unix-tools.md) | `date`, `awk`, `sed`, `tee` and friends inside those scripts |
 | [shellcheck.md](shellcheck.md) | lints the scripts |
-| [make.md](make.md) | the short commands (`make validate`, `make demo-drill`, ...) |
+| [make.md](make.md) | the short commands: `make help`, `make install`, `make fmt`, `make lint`, `make test`, `make test-policy`, `make test-e2e`, `make audit`, `make plan`, `make check`, `make validate`, `make fixtures`, `make demo-drill`, `make review`, `make up`, `make run`, `make attack`, `make respond`, `make measure`, `make down`, `make clean` |
 | [github-actions.md](github-actions.md) | runs the same commands on every push |
 | [yaml.md](yaml.md) | the format of the workflow file |
 

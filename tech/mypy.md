@@ -34,7 +34,7 @@ mypy_path = ["src"]
 ```
 
 - `python_version`: check as if running on 3.12.
-- `strict = true`: turns on the strictest group of checks: every function needs type hints, no implicit `Any`, no unused ignore comments, and more.
+- `strict = true`: turns on the strictest group of checks. In mypy 2.4 it switches on 13 options: `disallow_any_generics` (a container such as `list` must say what it holds), `disallow_subclassing_any` (no class may inherit from something of unknown type), `disallow_untyped_calls` (a typed function may not call an untyped one), `disallow_untyped_defs` (every function needs type hints), `disallow_incomplete_defs` (no function may be half-annotated), `check_untyped_defs` (also check the inside of functions that have no hints), `disallow_untyped_decorators` (a decorator must be typed), `warn_redundant_casts` (report a cast that changes nothing), `warn_unused_ignores` (report a `# type: ignore` comment that is not needed), `warn_return_any` (report a function that returns an untyped value where a type was promised), `no_implicit_reexport` (a name imported into a module is not automatically one of its public names), `strict_equality` (report comparisons between types that can never be equal) and `extra_checks` (a few additional strict rules).
 - `files`: what to check when you run bare `mypy`.
 - `mypy_path` and `explicit_package_bases`: tell mypy that `src/` is the root where packages such as `detect_respond` start, so it names modules correctly.
 

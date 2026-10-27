@@ -29,7 +29,7 @@ From `Makefile`:
 ```
 
 - `-d infra`: scan this directory.
-- `--framework terraform`: only the Terraform checks (not Kubernetes, Dockerfile and so on).
+- `--framework terraform`: only the Terraform checks (not the checks for Kubernetes manifests, Dockerfiles, CloudFormation templates or the other file types Checkov can scan).
 - `--quiet`: show only failed checks (no list of passes).
 - `--compact`: leave the code snippets out of the report.
 
