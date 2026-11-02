@@ -5,9 +5,9 @@
 source "$(dirname "$0")/lib.sh"
 mkdir -p "$EVIDENCE_DIR"
 use_account workload
-mode=("$@")
-"$PY" -m detect_respond contain --role "$DRILL_ROLE" --user "$DRILL_USER" "${mode[@]}" | tee -a "${EVIDENCE_DIR}/containment.txt"
-if [[ "${mode[*]}" == *--apply* ]]; then
+mode=("$@")  # empty without --apply; the "+" forms below keep Bash 3.2 (macOS) from failing on an empty array under set -u
+"$PY" -m detect_respond contain --role "$DRILL_ROLE" --user "$DRILL_USER" ${mode[@]+"${mode[@]}"} | tee -a "${EVIDENCE_DIR}/containment.txt"
+if [[ "${mode[*]+${mode[*]}}" == *--apply* ]]; then
   echo "CONTAINED AT $(stamp)" | tee -a "${EVIDENCE_DIR}/containment.txt"
   log "to prove it, run the attacker's next call (the profile and session from 07-drill-attack.sh) and see AccessDenied"
 fi

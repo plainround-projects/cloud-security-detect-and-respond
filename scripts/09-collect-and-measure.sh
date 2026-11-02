@@ -12,6 +12,6 @@ aws s3 sync "s3://$(archive_bucket)/AWSLogs/" "${EVIDENCE_DIR}/archive/AWSLogs/"
 alerts=()
 [[ -f "${EVIDENCE_DIR}/alerts.json" ]] && alerts=(--alerts "${EVIDENCE_DIR}/alerts.json")
 "$PY" -m detect_respond scan --archive "${EVIDENCE_DIR}/archive" --expect D1,D2,D4 | tail -n 1
-"$PY" -m detect_respond drill --archive "${EVIDENCE_DIR}/archive" "${alerts[@]}" | tee "${EVIDENCE_DIR}/timeline.txt"
-"$PY" -m detect_respond review --archive "${EVIDENCE_DIR}/archive" "${alerts[@]}" --output "${EVIDENCE_DIR}/REVIEW.md"
+"$PY" -m detect_respond drill --archive "${EVIDENCE_DIR}/archive" ${alerts[@]+"${alerts[@]}"} | tee "${EVIDENCE_DIR}/timeline.txt"
+"$PY" -m detect_respond review --archive "${EVIDENCE_DIR}/archive" ${alerts[@]+"${alerts[@]}"} --output "${EVIDENCE_DIR}/REVIEW.md"
 log "the review is ${EVIDENCE_DIR}/REVIEW.md. Edit its wording if you like, but keep an event id on every claim."

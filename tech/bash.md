@@ -614,31 +614,31 @@ From `scripts/08-contain.sh` (lines 5 to 8):
 source "$(dirname "$0")/lib.sh"
 mkdir -p "$EVIDENCE_DIR"
 use_account workload
-mode=("$@")
+mode=("$@")  # empty without --apply; the "+" forms below keep Bash 3.2 (macOS) from failing on an empty array under set -u
 ```
 
 `source "$(dirname "$0")/lib.sh"` loads the helper file that sits next to this script. `$0` is the path this script was started with, `dirname` takes its folder, and `source` runs `lib.sh` inside the current shell, so `log`, `die`, `require` and the variables become available (and the `set -euo pipefail` of `lib.sh` applies here too).
 
-`mkdir -p` and `use_account workload` do the usual preparation. `mode=("$@")` stores all of the script's arguments in an **array** named `mode`: empty for a dry run, or holding `--apply`.
+`mkdir -p` and `use_account workload` do the usual preparation. `mode=("$@")` stores all of the script's arguments in an **array** named `mode`: empty for a dry run, or holding `--apply`. Everything after `#` on that line is a comment, written for the next reader: the array is empty in the default case, and the two lines below use the `+` form so that case also works on the old Bash 3.2 of macOS.
 
 From `scripts/08-contain.sh` (line 9):
 
 ```bash
-"$PY" -m detect_respond contain --role "$DRILL_ROLE" --user "$DRILL_USER" "${mode[@]}" | tee -a "${EVIDENCE_DIR}/containment.txt"
+"$PY" -m detect_respond contain --role "$DRILL_ROLE" --user "$DRILL_USER" ${mode[@]+"${mode[@]}"} | tee -a "${EVIDENCE_DIR}/containment.txt"
 ```
 
-`"$PY" -m detect_respond contain --role "$DRILL_ROLE" --user "$DRILL_USER" "${mode[@]}"` runs the project's `contain` command, passing along whatever was given ([aws-iam.md](aws-iam.md)). `"${mode[@]}"` expands the array into separate arguments, which keeps each as one word. `| tee -a ".../containment.txt"` shows the output and appends it to a record. Note: when the array is empty, `"${mode[@]}"` is accepted by Bash 4.4 and newer but is an "unbound variable" error under `set -u` in the old Bash 3.2 that macOS ships; see "Mistakes people make".
+`"$PY" -m detect_respond contain --role "$DRILL_ROLE" --user "$DRILL_USER" ${mode[@]+"${mode[@]}"}` runs the project's `contain` command, passing along whatever was given ([aws-iam.md](aws-iam.md)). `${mode[@]+"${mode[@]}"}` expands the array into separate arguments, keeping each as one word. The pattern `${name+word}` means: if the variable `name` is set, use `word`; if it is not set, use nothing at all. For an array, "set" means "has at least one element", so `${mode[@]+"${mode[@]}"}` expands to the quoted words when the array has elements and to nothing when it is empty, and it never counts as an unbound variable. This is the form that works on every Bash, including the 3.2 that macOS ships, where a plain `"${mode[@]}"` of an empty array under `set -u` stops with `unbound variable`. `| tee -a ".../containment.txt"` shows the output and appends it to a record.
 
 From `scripts/08-contain.sh` (lines 10 to 13):
 
 ```bash
-if [[ "${mode[*]}" == *--apply* ]]; then
+if [[ "${mode[*]+${mode[*]}}" == *--apply* ]]; then
   echo "CONTAINED AT $(stamp)" | tee -a "${EVIDENCE_DIR}/containment.txt"
   log "to prove it, run the attacker's next call (the profile and session from 07-drill-attack.sh) and see AccessDenied"
 fi
 ```
 
-`[[ "${mode[*]}" == *--apply* ]]` joins the array into one string and tests whether it contains `--apply` anywhere (`*` matches any text). Only then does the script stamp the moment of containment (`echo "CONTAINED AT $(stamp)" | tee -a ...`) and tell the person how to prove it: run the attacker's next call and see `AccessDenied`. In a dry run nothing is stamped, because nothing changed.
+`[[ "${mode[*]+${mode[*]}}" == *--apply* ]]` joins the array into one string (`[*]` joins, `[@]` keeps separate words; the `+` form gives an empty string for an empty array instead of an unbound-variable error on Bash 3.2) and tests whether it contains `--apply` anywhere (`*` matches any text). Only then does the script stamp the moment of containment (`echo "CONTAINED AT $(stamp)" | tee -a ...`) and tell the person how to prove it: run the attacker's next call and see `AccessDenied`. In a dry run nothing is stamped, because nothing changed.
 
 ### `scripts/09-collect-and-measure.sh`: the timeline and the numbers
 
@@ -682,11 +682,11 @@ From `scripts/09-collect-and-measure.sh` (lines 14 to 16):
 
 ```bash
 "$PY" -m detect_respond scan --archive "${EVIDENCE_DIR}/archive" --expect D1,D2,D4 | tail -n 1
-"$PY" -m detect_respond drill --archive "${EVIDENCE_DIR}/archive" "${alerts[@]}" | tee "${EVIDENCE_DIR}/timeline.txt"
-"$PY" -m detect_respond review --archive "${EVIDENCE_DIR}/archive" "${alerts[@]}" --output "${EVIDENCE_DIR}/REVIEW.md"
+"$PY" -m detect_respond drill --archive "${EVIDENCE_DIR}/archive" ${alerts[@]+"${alerts[@]}"} | tee "${EVIDENCE_DIR}/timeline.txt"
+"$PY" -m detect_respond review --archive "${EVIDENCE_DIR}/archive" ${alerts[@]+"${alerts[@]}"} --output "${EVIDENCE_DIR}/REVIEW.md"
 ```
 
-Three commands, all run on the **local copy**: `scan --archive ... --expect D1,D2,D4 | tail -n 1` runs every detection over the archive and fails if D1, D2 or D4 does not fire (`tail -n 1` keeps the last line, the summary); `drill --archive ... "${alerts[@]}" | tee ".../timeline.txt"` rebuilds the attacker's timeline and measures time to detect and time to contain, saving the output; `review --archive ... "${alerts[@]}" --output ".../REVIEW.md"` writes the blameless review. `"${alerts[@]}"` expands the array into its words (nothing when it is empty; see "Mistakes people make" for the Bash 3.2 caveat).
+Three commands, all run on the **local copy**: `scan --archive ... --expect D1,D2,D4 | tail -n 1` runs every detection over the archive and fails if D1, D2 or D4 does not fire (`tail -n 1` keeps the last line, the summary); `drill --archive ... ${alerts[@]+"${alerts[@]}"} | tee ".../timeline.txt"` rebuilds the attacker's timeline and measures time to detect and time to contain, saving the output; `review --archive ... ${alerts[@]+"${alerts[@]}"} --output ".../REVIEW.md"` writes the blameless review. `${alerts[@]+"${alerts[@]}"}` expands the array into its words, or into nothing when it is empty, on every Bash version. The pattern `${name+word}` means: if the variable `name` is set, use `word`; if it is not set, use nothing at all. For an array, "set" means "has at least one element", so `${alerts[@]+"${alerts[@]}"}` expands to the quoted words when the array has elements and to nothing when it is empty, and it never counts as an unbound variable. This is the form that works on every Bash, including the 3.2 that macOS ships, where a plain `"${alerts[@]}"` of an empty array under `set -u` stops with `unbound variable`.
 
 From `scripts/09-collect-and-measure.sh` (line 17):
 
@@ -808,7 +808,7 @@ Expect `dry`: an empty argument list means a dry run.
 
 - Unquoted variables (`rm -rf $dir`). A value with a space or `*` changes what runs. ShellCheck flags it.
 - Missing `set -euo pipefail`, so a failed step is ignored and the script goes on.
-- Expanding an **empty array** under `set -u` on Bash 3.2. `"${mode[@]}"` in `08-contain.sh` and `"${alerts[@]}"` in `09-collect-and-measure.sh` fail there with `unbound variable` when the array is empty, which is the default case in both (the dry run, and no `alerts.json`). Bash 4.4 and newer accept it. On macOS with the stock `/bin/bash`, run the scripts with a newer Bash (`brew install bash`) until they are changed to the portable form `${mode[@]+"${mode[@]}"}`.
+- Expanding an **empty array** under `set -u` on Bash 3.2. A plain `"${mode[@]}"` (or `"${mode[*]}"`) of an empty array stops with `unbound variable` on the Bash 3.2 that macOS ships as `/bin/bash`; Bash 4.4 and newer accept it. This repository hit it: the default case of `08-contain.sh` (a dry run, no arguments) and of `09-collect-and-measure.sh` (no `alerts.json`) has an empty array. Both scripts now use the portable form `${mode[@]+"${mode[@]}"}` (and `"${mode[*]+${mode[*]}}"` for the joined string), and were run under `/bin/bash` 3.2.57 and under Bash 5.3 with a stand-in `aws` and Python to confirm it. Write the portable form whenever an array can be empty.
 - Putting secrets in command-line arguments, where `ps` shows them. The drill key goes straight into a CLI profile and is never printed.
 - Forgetting that a quoted here-document marker (`<<'PY'`) stops variable substitution and an unquoted one (`<<TFVARS`) allows it.
 
