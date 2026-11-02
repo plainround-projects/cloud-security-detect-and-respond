@@ -54,6 +54,60 @@ From `Makefile`:
 - `--cov` (with no value) uses `source` from the settings. `--cov-report=term` prints the table in the terminal.
 - The second command re-reads the same `.coverage` file, keeps only the domain and application files (`--include` with two patterns), and exits with an error code if the total is under 95. This is the gate: make stops there.
 
+### Every setting, one by one
+
+**Coverage** here means: which lines (and which branches) of the code ran while the tests ran. The tool `coverage.py` reads its settings from tables that start with `tool.coverage`. Every key this repository sets:
+
+From `pyproject.toml` (line 70):
+
+```toml
+[tool.coverage.run]
+```
+
+The header of the table for the **measuring** step (while tests run).
+
+From `pyproject.toml` (line 71):
+
+```toml
+source = ["detect_respond"]
+```
+
+`source`: the package names to measure: `detect_respond`. Only files of these packages appear in the report and count in the percentage; test files and installed libraries are left out. A package that no test ever imports still shows up, with 0 percent, instead of being invisible.
+
+From `pyproject.toml` (line 72):
+
+```toml
+branch = true
+```
+
+`branch = true`: measure **branches** as well as lines. A branch is one of the two ways an `if`, `while` or `for` can go. A line can run while one of its outcomes never does (an `if` that is always true); line coverage hides that, branch coverage shows it as a partial branch.
+
+From `pyproject.toml` (line 74):
+
+```toml
+[tool.coverage.report]
+```
+
+The header of the table for the **report** (the table printed after the tests).
+
+From `pyproject.toml` (line 75):
+
+```toml
+show_missing = true
+```
+
+`show_missing = true`: add a `Missing` column listing the line numbers (and `12->15` style jumps for branches) that never ran, so you know where to write the next test.
+
+From `pyproject.toml` (line 76):
+
+```toml
+skip_covered = false
+```
+
+`skip_covered = false`: keep files with 100 percent in the table. With `true` they would be hidden to shorten the output; here the whole table stays visible.
+
+The percentage gate is not in this file: it is the flag `--fail-under` on the `coverage report` command in the `Makefile` (see above), which exits with an error when the total is below the number.
+
 ## Try it yourself
 
 ```bash

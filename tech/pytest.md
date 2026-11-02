@@ -67,6 +67,56 @@ The block passes only if the code inside raises that error and its message match
 
 **The e2e marker.** In `tests/e2e/test_pipeline.py`, `pytestmark = pytest.mark.e2e` labels every test in the file, and the tests run `make validate` and `make demo-drill` as sub-processes.
 
+### Every setting, one by one
+
+pytest reads its settings from the table `[tool.pytest.ini_options]` (the name is historical: the same keys once lived in a file called `pytest.ini`). Every key that this repository sets:
+
+From `pyproject.toml` (line 62):
+
+```toml
+[tool.pytest.ini_options]
+```
+
+The header of the pytest table.
+
+From `pyproject.toml` (line 63):
+
+```toml
+testpaths = ["tests"]
+```
+
+`testpaths`: the folders pytest searches when you run `pytest` with no path. It looks there for files named `test_*.py` or `*_test.py` and, inside them, for functions whose names start with `test`. Here only `tests`, so it never wanders into `src`, `infra` or `.venv`.
+
+From `pyproject.toml` (line 64):
+
+```toml
+addopts = "-ra --strict-markers -m 'not e2e'"
+```
+
+`addopts`: command-line options added in front of every run, as if you had typed them. Three are set:
+
+- `-ra`: at the end, print a one-line summary of every test that did **not** simply pass. `-r` means "show a report summary" and the letter `a` means "all except passed", so skipped, failed, errored, expected-failure and similar outcomes are all listed.
+- `--strict-markers`: a test marked with a name that is not declared in `markers` is an error, not a warning.
+- `-m 'not e2e'`: run only tests whose marker expression is true. `not e2e` means "tests that do not carry the `e2e` marker", so the slow end-to-end tests are off by default. `make test-e2e` passes `-m e2e` later on the command line, and the last `-m` wins. The quotes are single because the whole value is inside TOML double quotes.
+
+From `pyproject.toml` (line 65):
+
+```toml
+pythonpath = ["src", "."]
+```
+
+`pythonpath`: extra folders placed at the front of the list Python searches when a test file runs `import`. `src` makes `import detect_respond` work without installing the package; `.` (the repository root) makes `from tests import builders` work.
+
+From `pyproject.toml` (lines 66 to 68):
+
+```toml
+markers = [
+    "e2e: runs the plan-and-check pipeline with Terraform installed (make test-e2e)",
+]
+```
+
+`markers`: the list of **marker** names the project defines. A marker is a label that a test can carry (`@pytest.mark.e2e`, or `pytestmark = pytest.mark.e2e` for a whole file) so that groups of tests can be selected or skipped with `-m`. Each entry is `name: description`; the description shows in `pytest --markers`. Because `--strict-markers` is on, a marker that is not listed here is an error, so a typo such as `@pytest.mark.e2f` cannot silently run nothing.
+
 ## Try it yourself
 
 ```bash

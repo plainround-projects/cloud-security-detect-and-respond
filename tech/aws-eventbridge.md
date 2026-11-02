@@ -97,6 +97,34 @@ From `src/detect_respond/infrastructure/plan_audit.py`:
 
 `audit-rules` compares each deployed rule's pattern with the detection file, and checks that each detection is deployed where its `deployTo` says. That closes the gap between "tested" and "running".
 
+### Every argument of every AWS resource in this repository
+
+A Terraform `resource` block describes one thing to create. Inside it, each line `name = value` is an **argument** and each `name { ... }` is a **nested block** (a group of arguments for one part of the resource). The column "Kind" says whether the AWS provider requires the argument, whether it is optional, whether it opens a nested block, or whether it is a Terraform **meta-argument** that works on every resource. In "Kind", `required` and `optional` were read from the provider's own schema (version 6.70.0, the one in the lock file), so they are not guesses. A path such as `rule.expiration.days` means the argument `days` inside the nested block `expiration` inside the nested block `rule`. Names that contain `var.` or `local.` or `module.` are values that come from elsewhere in the code ([terraform.md](terraform.md)).
+
+#### `aws_cloudwatch_event_rule`
+
+Declared in `infra/modules/alerting/main.tf` lines 64 to 72 (`detection`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `description` | optional | A sentence for people: what the rule watches for. | `"${each.key}: ${each.value.title}"` |
+| `event_pattern` | optional | A JSON filter ([json.md](json.md)): an event is passed on only when every field of the pattern matches the event. Fields not mentioned are ignored. | `each.value.pattern_json` |
+| `name` | optional | The name of the rule. | `"${var.name}-${lower(each.key)}"` |
+| `state` | optional | `ENABLED` makes the rule active; `DISABLED` keeps it but ignores events. | `each.value.state` |
+| `for_each` | meta-argument | A Terraform meta-argument: make one copy of this resource for each item of a map or set. Each copy is addressed by its key, so adding or removing an item adds or removes only that copy. | `var.detections` |
+
+#### `aws_cloudwatch_event_target`
+
+Declared in `infra/modules/alerting/main.tf` lines 74 to 87 (`alert`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `arn` | required | Where matching events are sent: the ARN of the target, here a topic ([aws-sns.md](aws-sns.md)). | `aws_sns_topic.alerts.arn` |
+| `input_transformer.input_paths` | optional | A map that pulls values out of the event: each name on the left becomes a variable that holds the part of the event at the path on the right (written like `$.detail.eventName`). | `local.alert_paths` |
+| `input_transformer.input_template` | required | The message actually sent: text with the variables from `input_paths` written in angle brackets. It replaces the raw event, so the e-mail is readable. | `format("\"%s\"", replace( replace(replace(replace(replace(var.templ...` |
+| `rule` | required | The name of the rule whose matching events this target receives. | `aws_cloudwatch_event_rule.detection[each.key].name` |
+| `for_each` | meta-argument | A Terraform meta-argument: make one copy of this resource for each item of a map or set. Each copy is addressed by its key, so adding or removing an item adds or removes only that copy. | `var.detections` |
+
 ## Try it yourself
 
 ```bash

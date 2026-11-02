@@ -86,6 +86,26 @@ DENIAL_CODES = ("AccessDenied", "AccessDeniedException", "Client.UnauthorizedOpe
 
 The `errorCode` values that mean "not allowed". A detection fires on a *refused* attempt too: an attempt is as telling as a success. After containment, the first call refused with one of these codes marks the moment of containment.
 
+### Every argument of every AWS resource in this repository
+
+A Terraform `resource` block describes one thing to create. Inside it, each line `name = value` is an **argument** and each `name { ... }` is a **nested block** (a group of arguments for one part of the resource). The column "Kind" says whether the AWS provider requires the argument, whether it is optional, whether it opens a nested block, or whether it is a Terraform **meta-argument** that works on every resource. In "Kind", `required` and `optional` were read from the provider's own schema (version 6.70.0, the one in the lock file), so they are not guesses. A path such as `rule.expiration.days` means the argument `days` inside the nested block `expiration` inside the nested block `rule`. Names that contain `var.` or `local.` or `module.` are values that come from elsewhere in the code ([terraform.md](terraform.md)).
+
+#### `aws_cloudtrail`
+
+Declared in `infra/modules/central-trail/main.tf` lines 3 to 18 (`central`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `enable_log_file_validation` | optional | Make CloudTrail write a signed digest file every hour. The digest lists a hash of each log file, so an edited or deleted log file can be detected afterwards. | `true` |
+| `enable_logging` | optional | Whether the trail is recording. `false` pauses it without deleting it; the control "an audit trail exists" relies on it being `true`. | `true` |
+| `event_selector.include_management_events` | optional | Record **management events**, the calls that create, change or delete resources and sign-ins (as opposed to data events, such as reading an object). | `true` |
+| `event_selector.read_write_type` | optional | Which management events to record: `All`, `ReadOnly` or `WriteOnly`. | `"All"` |
+| `include_global_service_events` | optional | Also record events of services that are not tied to one Region, such as IAM and the security token service, which are logged in `us-east-1`. | `true` |
+| `is_multi_region_trail` | optional | Record events from every AWS Region in one trail, not only the Region the trail lives in. Without it, activity in another Region is not logged. | `true` |
+| `kms_key_id` | optional | The key ([aws-kms.md](aws-kms.md)) that encrypts the log files. The log files are encrypted by default with S3 keys; naming a key makes them unreadable to anyone the key policy does not allow. | `var.log_key_arn` |
+| `name` | required | The name of the trail. | `var.name` |
+| `s3_bucket_name` | required | The bucket the trail writes its log files to ([aws-s3.md](aws-s3.md)). The bucket's policy must allow the CloudTrail service to write there. | `var.log_bucket_name` |
+
 ## Try it yourself
 
 ```bash

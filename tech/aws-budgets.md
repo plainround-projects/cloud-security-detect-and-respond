@@ -50,6 +50,27 @@ From `infra/modules/budget/main.tf`:
 
 Email when actual spending is above 80 percent of the limit. The second notification uses `notification_type = "FORECASTED"` and `threshold = 100`: email when the forecast says the month will exceed the limit.
 
+### Every argument of every AWS resource in this repository
+
+A Terraform `resource` block describes one thing to create. Inside it, each line `name = value` is an **argument** and each `name { ... }` is a **nested block** (a group of arguments for one part of the resource). The column "Kind" says whether the AWS provider requires the argument, whether it is optional, whether it opens a nested block, or whether it is a Terraform **meta-argument** that works on every resource. In "Kind", `required` and `optional` were read from the provider's own schema (version 6.70.0, the one in the lock file), so they are not guesses. A path such as `rule.expiration.days` means the argument `days` inside the nested block `expiration` inside the nested block `rule`. Names that contain `var.` or `local.` or `module.` are values that come from elsewhere in the code ([terraform.md](terraform.md)).
+
+#### `aws_budgets_budget`
+
+Declared in `infra/modules/budget/main.tf` lines 1 to 23 (`this`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `budget_type` | required | What the budget measures: `COST` is money spent (other values count usage, reservations or savings plans). | `"COST"` |
+| `limit_amount` | optional | The amount of the limit, as text, in the unit below. | `tostring(var.monthly_limit_usd)` |
+| `limit_unit` | optional | The unit of the limit: a currency code such as `USD`. | `"USD"` |
+| `name` | optional | The name of the budget. | `var.name` |
+| `notification.comparison_operator` | required | How the spend is compared with the threshold: `GREATER_THAN` sends the message once the spend is above it. | `"GREATER_THAN"` |
+| `notification.notification_type` | required | `ACTUAL` reacts to money already spent; `FORECASTED` reacts to what AWS predicts will be spent. | `"ACTUAL"` / `"FORECASTED"` |
+| `notification.subscriber_email_addresses` | optional | The e-mail addresses that receive the message. | `[var.email]` |
+| `notification.threshold` | required | The number that triggers the message; meaning depends on `threshold_type`. | `80` / `100` |
+| `notification.threshold_type` | required | `PERCENTAGE` means the threshold is a percent of the limit; `ABSOLUTE_VALUE` would mean an amount. | `"PERCENTAGE"` |
+| `time_unit` | required | How often the budget starts again: `MONTHLY` here. | `"MONTHLY"` |
+
 ## Try it yourself
 
 ```bash

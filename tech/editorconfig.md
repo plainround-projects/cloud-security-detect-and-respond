@@ -64,6 +64,122 @@ trim_trailing_whitespace = false
 
 In Markdown, two spaces at the end of a line mean "line break", so trimming would change the meaning.
 
+### Every line, one by one
+
+`.editorconfig` is read by editors (through a plug-in or built in); a section header in square brackets chooses files, and the `key = value` lines under it are the settings for those files. Later and more specific sections override earlier ones. Each line of this repository's file:
+
+From `.editorconfig` (line 1):
+
+```text
+root = true
+```
+
+Stop searching parent folders for another `.editorconfig`; this file is the top.
+
+From `.editorconfig` (line 3):
+
+```text
+[*]
+```
+
+A **section header**: the settings below apply to every file (`*` matches any name).
+
+From `.editorconfig` (line 4):
+
+```text
+charset = utf-8
+```
+
+Save files as UTF-8, the text encoding that can hold every language's letters in a way every tool agrees on.
+
+From `.editorconfig` (line 5):
+
+```text
+end_of_line = lf
+```
+
+End each line with a single **line feed** character (the Unix way), not the Windows pair (carriage return, line feed). Mixed endings make diffs noisy.
+
+From `.editorconfig` (line 6):
+
+```text
+insert_final_newline = true
+```
+
+Make sure the file ends with a newline character; many tools expect it, and diffs do not show "no newline at end of file".
+
+From `.editorconfig` (line 7):
+
+```text
+trim_trailing_whitespace = true
+```
+
+Remove spaces and tabs at the end of each line when saving.
+
+From `.editorconfig` (line 8):
+
+```text
+indent_style = space
+```
+
+Indent with space characters.
+
+From `.editorconfig` (line 9):
+
+```text
+indent_size = 4
+```
+
+One level of indentation is four spaces (the Python convention).
+
+From `.editorconfig` (line 11):
+
+```text
+[*.{yml,yaml,json,toml,tf,tfvars,hcl,rego}]
+```
+
+A section for files whose name ends in any of the listed endings; the braces mean "one of these".
+
+From `.editorconfig` (line 12):
+
+```text
+indent_size = 2
+```
+
+For those files one level is two spaces, the usual style for YAML, JSON, TOML, Terraform and Rego. It overrides the `4` above for these files only.
+
+From `.editorconfig` (line 14):
+
+```text
+[Makefile]
+```
+
+A section for files named exactly `Makefile`.
+
+From `.editorconfig` (line 15):
+
+```text
+indent_style = tab
+```
+
+Indent with a tab character. A Makefile requires a tab in front of every command line ([make.md](make.md)).
+
+From `.editorconfig` (line 17):
+
+```text
+[*.md]
+```
+
+A section for Markdown files.
+
+From `.editorconfig` (line 18):
+
+```text
+trim_trailing_whitespace = false
+```
+
+Do **not** trim: in Markdown two spaces at the end of a line mean a line break, so removing them would change the text.
+
 ## Try it yourself
 
 ```bash

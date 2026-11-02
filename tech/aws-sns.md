@@ -70,6 +70,38 @@ resource "aws_sns_topic_subscription" "responder" {
 
 An email subscription. The comment above it says the subscription stays pending until the address confirms it. After `make up` you must open each of the three confirmation emails (one per Region) or **no alert reaches you**, and nothing fails in Terraform.
 
+### Every argument of every AWS resource in this repository
+
+A Terraform `resource` block describes one thing to create. Inside it, each line `name = value` is an **argument** and each `name { ... }` is a **nested block** (a group of arguments for one part of the resource). The column "Kind" says whether the AWS provider requires the argument, whether it is optional, whether it opens a nested block, or whether it is a Terraform **meta-argument** that works on every resource. In "Kind", `required` and `optional` were read from the provider's own schema (version 6.70.0, the one in the lock file), so they are not guesses. A path such as `rule.expiration.days` means the argument `days` inside the nested block `expiration` inside the nested block `rule`. Names that contain `var.` or `local.` or `module.` are values that come from elsewhere in the code ([terraform.md](terraform.md)).
+
+#### `aws_sns_topic`
+
+Declared in `infra/modules/alerting/main.tf` lines 36 to 39 (`alerts`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `kms_master_key_id` | optional | The key that encrypts messages at rest in the topic. | `module.key.key_arn` |
+| `name` | optional | The name of the topic. | `"${var.name}-alerts"` |
+
+#### `aws_sns_topic_policy`
+
+Declared in `infra/modules/alerting/main.tf` lines 41 to 55 (`alerts`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `arn` | required | The topic the policy is attached to. | `aws_sns_topic.alerts.arn` |
+| `policy` | required | Who may publish to or subscribe to the topic (here: the EventBridge service for one rule). | `jsonencode({ Version = "2012-10-17" Statement = [{ Sid = "EventsPub...` |
+
+#### `aws_sns_topic_subscription`
+
+Declared in `infra/modules/alerting/main.tf` lines 58 to 62 (`responder`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `endpoint` | required | The address that receives them. | `var.alert_email` |
+| `protocol` | required | How messages are delivered: `email` sends a mail after the address confirms. | `"email"` |
+| `topic_arn` | required | The topic to subscribe to. | `aws_sns_topic.alerts.arn` |
+
 ## Try it yourself
 
 ```bash

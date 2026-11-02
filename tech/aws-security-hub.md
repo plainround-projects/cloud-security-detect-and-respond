@@ -70,6 +70,27 @@ aws securityhub get-findings --region "$REGION" --max-items 1000 \
 
 Reads the open findings (the script's filter keeps `FAILED`, `NEW` or `NOTIFIED`, `ACTIVE`) and saves them as the before or after file ([aws-cli.md](aws-cli.md)).
 
+### Every argument of every AWS resource in this repository
+
+A Terraform `resource` block describes one thing to create. Inside it, each line `name = value` is an **argument** and each `name { ... }` is a **nested block** (a group of arguments for one part of the resource). The column "Kind" says whether the AWS provider requires the argument, whether it is optional, whether it opens a nested block, or whether it is a Terraform **meta-argument** that works on every resource. In "Kind", `required` and `optional` were read from the provider's own schema (version 6.70.0, the one in the lock file), so they are not guesses. A path such as `rule.expiration.days` means the argument `days` inside the nested block `expiration` inside the nested block `rule`. Names that contain `var.` or `local.` or `module.` are values that come from elsewhere in the code ([terraform.md](terraform.md)).
+
+#### `aws_securityhub_account`
+
+Declared in `infra/modules/posture/main.tf` lines 161 to 163 (`this`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `depends_on` | meta-argument | See above: create the Security Hub account only after the resources listed. | `[aws_config_configuration_recorder_status.this]` |
+
+#### `aws_securityhub_standards_subscription`
+
+Declared in `infra/modules/posture/main.tf` lines 165 to 169 (`foundational`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `standards_arn` | required | The ARN of the set of checks to turn on, for example the AWS Foundational Security Best Practices standard. | `"arn:aws:securityhub:${var.region}::standards/aws-foundational-secu...` |
+| `depends_on` | meta-argument | A Terraform **meta-argument** (it works on every resource and is not sent to AWS): create this resource only after the listed ones. Terraform normally works out the order from references; `depends_on` states an order that no reference shows, for example a policy that must exist before a service first writes. | `[aws_securityhub_account.this]` |
+
 ## Try it yourself
 
 ```bash

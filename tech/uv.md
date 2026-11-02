@@ -39,6 +39,85 @@ From `requirements-dev.lock`:
 
 To update the locks, run both commands again (one with `--extra dev`, one without), review the diff, and run `make lint test`.
 
+### Every entry of the lock files, one by one
+
+A **lock file** is the full, exact list of libraries that the project installs, including the libraries that its libraries need. Each entry has the same parts:
+
+- `name==version`: the library and the one version that is installed. `==` means "exactly".
+- `; sys_platform == 'win32'` (only on some entries): an **environment marker**. The library is installed only where the condition is true, here only on Windows. Because the lock was made with `--universal`, it holds entries for every platform, and a marker says where each applies.
+- `--hash=sha256:...` lines: fingerprints (SHA-256, a number that is computed from a file's bytes) of every file that may be installed for this version. With `pip install --require-hashes`, pip refuses any file whose fingerprint is not in the list, so a replaced or tampered download is rejected. There are several because a library is published as several files (one for each Python version and operating system).
+- `# via x` comment lines: which other library asked for this one. `# via cloud-security-... (pyproject.toml)` means this repository asked for it directly. A list under `# via` means several libraries asked.
+- The first two comment lines record the exact command that created the file, so the next person can repeat it.
+
+The tables below list every entry. "What it is" is the one-line summary that each library publishes about itself, read from the installed copy in the virtual environment of this repository.
+
+#### `requirements.lock`: 7 packages
+
+| Package | Pinned version | Hashes | What it is | Needed by |
+| --- | --- | --- | --- | --- |
+| `boto3` | `1.43.119` | 2 | The AWS SDK for Python (Boto3). | `cloud-security-detect-and-respond (pyproject.toml)` |
+| `botocore` | `1.43.119` | 2 | Low-level, data-driven core of boto 3. | `boto3`, `s3transfer` |
+| `jmespath` | `1.1.0` | 2 | JSON Matching Expressions. | `boto3`, `botocore` |
+| `python-dateutil` | `2.9.0.post0` | 2 | Extensions to the standard Python datetime module. | `botocore` |
+| `s3transfer` | `0.19.3` | 2 | An Amazon S3 Transfer Manager. | `boto3` |
+| `six` | `1.17.0` | 2 | Python 2 and 3 compatibility utilities. | `python-dateutil` |
+| `urllib3` | `2.8.0` | 2 | HTTP library with thread-safe connection pooling, file post, and more. | `botocore` |
+
+#### `requirements-dev.lock`: 50 packages
+
+| Package | Pinned version | Hashes | What it is | Needed by |
+| --- | --- | --- | --- | --- |
+| `ast-serialize` | `0.13.1` | 57 | Python bindings for mypy AST serialization. | `mypy` |
+| `boolean-py` | `5.0` | 2 | Define boolean algebras, create and parse boolean expressions and create custom boolean DSL. | `license-expression` |
+| `boto3` | `1.43.119` | 2 | The AWS SDK for Python (Boto3). | `cloud-security-detect-and-respond (pyproject.toml)` |
+| `botocore` | `1.43.119` | 2 | Low-level, data-driven core of boto 3. | `boto3`, `s3transfer` |
+| `cachecontrol` | `0.14.4` | 2 | httplib2 caching for requests. | `pip-audit` |
+| `certifi` | `2026.10.23` | 2 | Python package for providing Mozilla's CA Bundle. | `requests` |
+| `charset-normalizer` | `3.5.2` | 172 | The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet. | `requests` |
+| `click` | `8.5.0` | 2 | Composable command line interface toolkit. | `import-linter` |
+| `colorama` | `0.4.6` | 2 | Cross-platform colored terminal text. Installed only where `sys_platform == 'win32'`. | `pytest` |
+| `coverage` | `7.17.0` | 119 | Code coverage measurement for Python. | `pytest-cov` |
+| `cyclonedx-python-lib` | `11.12.0` | 2 | Python library for CycloneDX. | `pip-audit` |
+| `defusedxml` | `0.7.1` | 2 | XML bomb protection for Python stdlib modules. | `py-serializable` |
+| `filelock` | `4.2.4` | 2 | A platform independent file lock. | `cachecontrol` |
+| `grimp` | `3.18` | 106 | Builds a queryable graph of the imports within one or more Python packages. | `import-linter` |
+| `idna` | `3.20` | 2 | Internationalized Domain Names in Applications (IDNA). | `requests` |
+| `import-linter` | `2.15` | 2 | Lint your Python architecture. | `cloud-security-detect-and-respond (pyproject.toml)` |
+| `iniconfig` | `2.3.1` | 2 | brain-dead simple config-ini parsing. | `pytest` |
+| `jmespath` | `1.1.0` | 2 | JSON Matching Expressions. | `boto3`, `botocore` |
+| `librt` | `0.16.0` | 137 | Mypyc runtime library. Installed only where `platform_python_implementation != 'PyPy'`. | `mypy` |
+| `license-expression` | `30.4.4` | 2 | license-expression is a comprehensive utility library to parse, compare, simplify and normalize license expressions (such as SPDX license expressions) using boolean logic. | `cyclonedx-python-lib` |
+| `markdown-it-py` | `4.2.0` | 2 | Python port of markdown-it. Markdown parsing, done right!. | `rich` |
+| `mdurl` | `0.1.2` | 2 | Markdown URL utilities. | `markdown-it-py` |
+| `msgpack` | `1.2.4` | 91 | MessagePack serializer. | `cachecontrol` |
+| `mypy` | `2.4.0` | 52 | Optional static typing for Python. | `cloud-security-detect-and-respond (pyproject.toml)` |
+| `mypy-extensions` | `1.1.0` | 2 | Type system extensions for programs checked with the mypy type checker. | `mypy` |
+| `packageurl-python` | `0.17.6` | 2 | A purl aka. Package URL parser and builder. | `cyclonedx-python-lib` |
+| `packaging` | `26.3` | 2 | Core utilities for Python packages. | `pip-audit`, `pip-requirements-parser`, `pytest` |
+| `pathspec` | `1.1.1` | 2 | Utility library for gitignore style pattern matching of file paths. | `mypy` |
+| `pip` | `26.2.2` | 2 | The PyPA recommended tool for installing Python packages. | `pip-api` |
+| `pip-api` | `0.0.35` | 2 | An unofficial, importable pip API. | `pip-audit` |
+| `pip-audit` | `2.10.1` | 2 | A tool for scanning Python environments for known vulnerabilities. | `cloud-security-detect-and-respond (pyproject.toml)` |
+| `pip-requirements-parser` | `32.0.1` | 2 | pip requirements parser - a mostly correct pip requirements parsing library because it uses pip's own code. | `pip-audit` |
+| `platformdirs` | `4.13.5` | 2 | A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`. | `pip-audit` |
+| `pluggy` | `1.7.0` | 2 | plugin and hook calling mechanisms for python. | `pytest`, `pytest-cov` |
+| `py-serializable` | `2.1.0` | 2 | Library for serializing and deserializing Python Objects to and from JSON and XML. | `cyclonedx-python-lib` |
+| `pygments` | `2.21.0` | 2 | Pygments is a syntax highlighting package written in Python. | `pytest`, `rich` |
+| `pyparsing` | `3.3.3` | 2 | pyparsing - Classes and methods to define and execute parsing grammars. | `pip-requirements-parser` |
+| `pytest` | `9.1.1` | 2 | pytest: simple powerful testing with Python. | `cloud-security-detect-and-respond (pyproject.toml)`, `pytest-cov` |
+| `pytest-cov` | `7.1.0` | 2 | Pytest plugin for measuring coverage. | `cloud-security-detect-and-respond (pyproject.toml)` |
+| `python-dateutil` | `2.9.0.post0` | 2 | Extensions to the standard Python datetime module. | `botocore` |
+| `requests` | `2.34.2` | 2 | Python HTTP for Humans. | `cachecontrol`, `pip-audit` |
+| `rich` | `15.0.0` | 2 | Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal. | `import-linter`, `pip-audit` |
+| `ruff` | `0.17.3` | 18 | An extremely fast Python linter and code formatter, written in Rust. | `cloud-security-detect-and-respond (pyproject.toml)` |
+| `s3transfer` | `0.19.3` | 2 | An Amazon S3 Transfer Manager. | `boto3` |
+| `six` | `1.17.0` | 2 | Python 2 and 3 compatibility utilities. | `python-dateutil` |
+| `sortedcontainers` | `2.4.0` | 2 | Sorted Containers -- Sorted List, Sorted Dict, Sorted Set. | `cyclonedx-python-lib` |
+| `tomli` | `2.5.0` | 65 | A lil' TOML parser. | `pip-audit` |
+| `tomli-w` | `1.2.0` | 2 | A lil' TOML writer. | `pip-audit` |
+| `typing-extensions` | `4.16.0` | 2 | Backported and Experimental Type Hints for Python 3.9+. | `cyclonedx-python-lib`, `import-linter`, `mypy` |
+| `urllib3` | `2.8.0` | 2 | HTTP library with thread-safe connection pooling, file post, and more. | `botocore`, `requests` |
+
 ## Try it yourself
 
 ```bash

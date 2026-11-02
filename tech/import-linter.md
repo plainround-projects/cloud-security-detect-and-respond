@@ -62,6 +62,111 @@ forbidden_modules = ["boto3", "botocore"]
 
 The domain and application layers may not import the AWS libraries, directly or through a chain. Only `infrastructure` imports `boto3` ([boto3.md](boto3.md)), and the application sees it only as the `Revoker` port.
 
+### Every setting, one by one
+
+import-linter reads the table `[tool.importlinter]` for its general settings and one `[[tool.importlinter.contracts]]` entry for each rule. A **contract** is a rule about which module may import which, checked against the real `import` lines of the code. Every key this repository sets:
+
+From `pyproject.toml` (line 78):
+
+```toml
+[tool.importlinter]
+```
+
+The header of the general table.
+
+From `pyproject.toml` (line 79):
+
+```toml
+root_package = "detect_respond"
+```
+
+`root_package = "detect_respond"`: the one top-level package to analyze. Everything below it is read; contract module names must start with it (or be an external package).
+
+From `pyproject.toml` (line 80):
+
+```toml
+include_external_packages = true
+```
+
+`include_external_packages = true`: put installed libraries (such as `boto3`) into the import graph too. By default only the project's own packages are in it, and a contract that names `boto3` could not see any import of it.
+
+From `pyproject.toml` (line 82):
+
+```toml
+[[tool.importlinter.contracts]]
+```
+
+The header of contract number 1.
+
+From `pyproject.toml` (line 83):
+
+```toml
+name = "Layers: interfaces -> infrastructure -> application -> domain, never upward"
+```
+
+`name`: the text printed in the report next to KEPT or BROKEN. It is also the one-line statement of the rule.
+
+From `pyproject.toml` (line 84):
+
+```toml
+type = "layers"
+```
+
+`type = "layers"`: which kind of rule this is. `layers`: modules are stacked from highest to lowest; a higher one may import a lower one, never the other way round.
+
+From `pyproject.toml` (lines 85 to 90):
+
+```toml
+layers = [
+    "detect_respond.interfaces",
+    "detect_respond.infrastructure",
+    "detect_respond.application",
+    "detect_respond.domain",
+]
+```
+
+`layers`: the stack, **highest first**: `detect_respond.interfaces`, `detect_respond.infrastructure`, `detect_respond.application`, `detect_respond.domain`. Reading it top to bottom: the command line may use infrastructure, infrastructure may use the application layer, the application layer may use the domain, and no step back up is allowed.
+
+From `pyproject.toml` (line 92):
+
+```toml
+[[tool.importlinter.contracts]]
+```
+
+The header of contract number 2.
+
+From `pyproject.toml` (line 93):
+
+```toml
+name = "Domain and application know nothing about AWS"
+```
+
+`name`: the text printed in the report next to KEPT or BROKEN. It is also the one-line statement of the rule.
+
+From `pyproject.toml` (line 94):
+
+```toml
+type = "forbidden"
+```
+
+`type = "forbidden"`: which kind of rule this is. `forbidden`: the listed source modules must not import the listed forbidden modules, neither directly nor through a chain of other modules.
+
+From `pyproject.toml` (line 95):
+
+```toml
+source_modules = ["detect_respond.domain", "detect_respond.application"]
+```
+
+`source_modules`: the modules that are held to the rule: `detect_respond.domain`, `detect_respond.application`. Everything below each of them is held to it as well.
+
+From `pyproject.toml` (line 96):
+
+```toml
+forbidden_modules = ["boto3", "botocore"]
+```
+
+`forbidden_modules`: what the source modules must never import: `boto3`, `botocore`. These are the AWS client libraries, so only the infrastructure layer may talk to AWS.
+
 ## Try it yourself
 
 ```bash

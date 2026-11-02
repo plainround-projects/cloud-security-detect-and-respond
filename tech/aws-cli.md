@@ -76,6 +76,59 @@ aws resourcegroupstaggingapi get-resources --region "$REGION" --tag-filters Key=
 
 Lists every resource that still carries the project tag, found by the default tag the provider adds ([terraform-aws-provider.md](terraform-aws-provider.md)).
 
+### Every command and flag, one by one
+
+The AWS command line has the form `aws <service> <command> --flag value`. `aws s3 ...` and `aws s3api ...` are two interfaces to the same service: `s3` has convenient commands (`ls`, `cp`, `sync`) and `s3api` is one command per API call. The credentials used by every call below come from the profile selected by the script (`AWS_PROFILE`) or, after `assume-role`, from the three temporary values the script exports ([aws-sts.md](aws-sts.md)). Every command this repository runs:
+
+- **`aws cloudtrail get-trail-status`**: Shows whether a trail is logging and when it last delivered a file (named in an error message of the script). Flags: none. Run in: `scripts/03-verify-archive.sh` line 23.
+- **`aws cloudtrail validate-logs`**: Checks the log files in the bucket against the signed hourly digests, and reports any file that was changed or removed. Flags: `--start-time`, `--trail-arn`. Run in: `scripts/03-verify-archive.sh` line 38.
+- **`aws configure set`**: Writes one setting into the CLI's own configuration files (the credentials file or the config file) for a named profile. Flags: `--profile`. Run in: `scripts/04-drill-setup.sh` line 15; `scripts/04-drill-setup.sh` line 16; `scripts/04-drill-setup.sh` line 17; `scripts/10-teardown.sh` line 23; `scripts/10-teardown.sh` line 23.
+- **`aws ec2 describe-instances`**: Lists machines. The drill runs it in a Region the account never uses, to test that such a call is detected. Flags: `--region`. Run in: `scripts/07-drill-attack.sh` line 20.
+- **`aws iam create-access-key`**: Creates a long-lived access key (an id and a secret) for a user ([aws-iam.md](aws-iam.md)). Flags: `--output`, `--query`, `--user-name`. Run in: `scripts/04-drill-setup.sh` line 14; `scripts/06-honeytoken.sh` line 7; `scripts/07-drill-attack.sh` line 18.
+- **`aws iam delete-access-key`**: Deletes one access key. Flags: `--access-key-id`, `--user-name`. Run in: `scripts/10-teardown.sh` line 18; `scripts/10-teardown.sh` line 21.
+- **`aws iam list-access-keys`**: Lists a user's access keys. Flags: `--output`, `--query`, `--user-name`. Run in: `scripts/04-drill-setup.sh` line 13; `scripts/10-teardown.sh` line 17; `scripts/10-teardown.sh` line 20.
+- **`aws iam list-attached-role-policies`**: Lists managed policies attached to a role. Flags: `--output`, `--role-name`. Run in: `scripts/04-drill-setup.sh` line 24.
+- **`aws iam list-role-policies`**: Lists the names of inline policies of a role. Flags: `--output`, `--role-name`. Run in: `scripts/04-drill-setup.sh` line 25.
+- **`aws iam list-user-policies`**: Lists the names of inline policies of a user. Flags: `--output`, `--user-name`. Run in: `scripts/04-drill-setup.sh` line 27.
+- **`aws resourcegroupstaggingapi get-resources`**: Lists resources by tag, across services. The teardown scripts use it to confirm nothing tagged with the project is left. Flags: `--output`, `--query`, `--region`, `--tag-filters`. Run in: `scripts/10-teardown.sh` line 29.
+- **`aws s3 ls`**: Lists buckets (no argument) or the objects under a prefix. With no bucket argument it needs `s3:ListAllMyBuckets`. Flags: `--recursive`. Run in: `scripts/03-verify-archive.sh` line 17; `scripts/07-drill-attack.sh` line 17.
+- **`aws s3 sync`**: Copies only the files that are new or changed from a bucket folder to a local folder, or the reverse. Flags: `--only-show-errors`. Run in: `scripts/09-collect-and-measure.sh` line 10.
+- **`aws s3api delete-object`**: Deletes an object, or one version of it when `--version-id` is given. On an Object-Locked bucket the call is refused. Flags: `--bucket`, `--key`, `--version-id`. Run in: `scripts/03-verify-archive.sh` line 27; `scripts/03-verify-archive.sh` line 33.
+- **`aws s3api head-bucket`**: Asks only whether the bucket exists and can be reached; exits with an error otherwise. Flags: `--bucket`. Run in: `scripts/07-drill-attack.sh` line 9.
+- **`aws s3api list-object-versions`**: Lists every version of the objects under a prefix, with their version ids. Flags: `--bucket`, `--output`, `--prefix`, `--query`. Run in: `scripts/03-verify-archive.sh` line 26.
+- **`aws s3api put-bucket-acl`**: Sets the bucket's access control list; `public-read` lets everyone list the bucket's objects. Flags: `--acl`, `--bucket`. Run in: `scripts/07-drill-attack.sh` line 19.
+- **`aws securityhub get-findings`**: Lists findings of the posture checks ([aws-security-hub.md](aws-security-hub.md)). Flags: `--filters`, `--max-items`, `--region`. Run in: `scripts/05-posture-baseline.sh` line 11.
+- **`aws sns create-topic`**: Creates a notification topic ([aws-sns.md](aws-sns.md)). Creating one is a management event that leaves a log entry, which the script then looks for. Flags: `--name`, `--output`, `--query`, `--region`. Run in: `scripts/03-verify-archive.sh` line 11.
+- **`aws sns delete-topic`**: Deletes a topic. Flags: `--region`, `--topic-arn`. Run in: `scripts/03-verify-archive.sh` line 12.
+- **`aws sts assume-role`**: Asks the security token service for temporary credentials for a role ([aws-sts.md](aws-sts.md)). The answer holds an access key id, a secret key and a session token that expire. Flags: `--output`, `--query`, `--role-arn`, `--role-session-name`. Run in: `scripts/07-drill-attack.sh` line 13.
+- **`aws sts get-caller-identity`**: Prints who the current credentials belong to: the account number, the user or role ARN and the user id. Used first by every script to refuse the wrong account. Flags: `--output`, `--query`. Run in: `scripts/lib.sh` line 39.
+
+The flags, each explained once:
+
+- `--access-key-id`: The id of an access key (the public half).
+- `--acl`: The canned access-control setting to apply, such as `public-read`.
+- `--bucket`: The bucket name.
+- `--filters`: Select items by a key and its values.
+- `--key`: The object key (its name in the bucket).
+- `--max-items`: Stop after this many results.
+- `--name`: The name of the thing to create or read.
+- `--only-show-errors`: Print nothing except errors, instead of a line per file copied.
+- `--output`: The output format: `text` (tab separated, easy for scripts), `json`, or `table`.
+- `--prefix`: Only keys that start with this text.
+- `--profile`: Which named set of credentials and settings from the CLI configuration to use.
+- `--query`: A JMESPath expression that picks parts of the JSON answer before printing, so a script gets just the field it needs.
+- `--recursive`: Include everything below the given prefix.
+- `--region`: The Region to send the call to; otherwise the profile's or environment's Region is used.
+- `--role-arn`: The ARN of the role.
+- `--role-name`: The name of the role.
+- `--role-session-name`: A label for this use of the role; it appears in the logs (`assumed-role/<role>/<label>`) so a session can be traced.
+- `--start-time`: Only events from this time on.
+- `--tag-filters`: Select resources by tag key and values.
+- `--topic-arn`: The ARN of the topic.
+- `--trail-arn`: The ARN of the trail.
+- `--user-name`: The name of the IAM user.
+- `--version-id`: The version of the object to act on.
+
 ## Try it yourself
 
 ```bash

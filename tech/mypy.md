@@ -62,6 +62,129 @@ Test functions are named for behavior and take pytest fixtures, so requiring a h
 
 A typical hint in the source: `def verify_digest(digest: Mapping[str, Any], read_content: Callable[[str], bytes | None]) -> DigestResult:`. mypy checks every call of `verify_digest` against it, and checks that the function returns a `DigestResult`.
 
+### Every setting, one by one
+
+mypy reads the table `[tool.mypy]` and any number of `[[tool.mypy.overrides]]` entries (double brackets add one more item to a list of tables). Every key this repository sets:
+
+From `pyproject.toml` (line 44):
+
+```toml
+[tool.mypy]
+```
+
+The header of the main mypy table.
+
+From `pyproject.toml` (line 45):
+
+```toml
+python_version = "3.12"
+```
+
+`python_version`: the Python version to check against; mypy uses the standard library definitions of that version and reports syntax newer than it.
+
+From `pyproject.toml` (line 46):
+
+```toml
+strict = true
+```
+
+`strict = true`: switch on the whole group of strict checks (listed in the walkthrough above). One word instead of thirteen lines of settings, and a new strict check added in a later mypy release is picked up automatically.
+
+From `pyproject.toml` (line 47):
+
+```toml
+files = ["src", "tests", "scripts"]
+```
+
+`files`: what to check when mypy runs with no arguments: every `.py` file under these folders.
+
+From `pyproject.toml` (line 48):
+
+```toml
+explicit_package_bases = true
+```
+
+`explicit_package_bases = true`: tell mypy that a folder named in `mypy_path` is the **base** from which module names are counted, instead of letting it guess from `__init__.py` files. Without it a file such as `src/pkg/a.py` could be seen as the module `src.pkg.a` as well as `pkg.a`, and mypy would report duplicate modules.
+
+From `pyproject.toml` (line 49):
+
+```toml
+mypy_path = ["src"]
+```
+
+`mypy_path`: extra folders where mypy looks for modules, like Python's import path. `src` is where the packages live (the "src layout").
+
+From `pyproject.toml` (line 51):
+
+```toml
+[[tool.mypy.overrides]]
+```
+
+The header of one override: settings that apply only to the modules named in its `module` key, on top of the main table.
+
+From `pyproject.toml` (line 52):
+
+```toml
+module = ["boto3", "boto3.*", "botocore", "botocore.*"]
+```
+
+`module`: which modules this override is about: `boto3`, `boto3.*`, `botocore`, `botocore.*`. A name with `.*` at the end means "that package and everything below it", so `boto3` and `boto3.*` together cover the package and its submodules.
+
+From `pyproject.toml` (line 53):
+
+```toml
+ignore_missing_imports = true
+```
+
+`ignore_missing_imports = true`: when mypy cannot find type information for these modules, do not report an error; treat what they provide as `Any` (no checking). The AWS libraries do not ship type information, so without this every `import boto3` would be an error.
+
+From `pyproject.toml` (line 56):
+
+```toml
+[[tool.mypy.overrides]]
+```
+
+The header of one override: settings that apply only to the modules named in its `module` key, on top of the main table.
+
+From `pyproject.toml` (line 57):
+
+```toml
+module = ["tests.*"]
+```
+
+`module`: which modules this override is about: `tests.*`. A name with `.*` at the end means "that package and everything below it", so `boto3` and `boto3.*` together cover the package and its submodules.
+
+From `pyproject.toml` (line 58):
+
+```toml
+disallow_untyped_defs = false
+```
+
+`disallow_untyped_defs = false`: switch off, for these modules only, the strict check that forbids a function with no type hints at all. Test functions are named for the behavior they check and take pytest fixtures, so a hint on each adds noise and no safety.
+
+From `pyproject.toml` (line 59):
+
+```toml
+disallow_incomplete_defs = false
+```
+
+`disallow_incomplete_defs = false`: switch off, for these modules only, the strict check that forbids a function with hints on some parameters but not all. Test functions are named for the behavior they check and take pytest fixtures, so a hint on each adds noise and no safety.
+
+From `pyproject.toml` (line 60):
+
+```toml
+disallow_untyped_calls = false
+```
+
+`disallow_untyped_calls = false`: switch off, for these modules only, the strict check that forbids a call to a function that has no type hints. Test functions are named for the behavior they check and take pytest fixtures, so a hint on each adds noise and no safety.
+
+**Suppressions in the code.** A comment `# type: ignore[code]` at the end of a line tells mypy "do not report the error named in brackets on this line". Under `strict`, mypy also reports a suppression that is no longer needed (`warn_unused_ignores`). This repository uses it in these places:
+
+- `src/detect_respond/interfaces/cli.py` line 127: `def _run(args: argparse.Namespace):  # type: ignore[no-untyped-def]`. The code in brackets limits the silence to the error `no-untyped-def`: the function has no type hints.
+- `tests/unit/detect_respond/test_response.py` line 202: `assert Finding.from_asff({**asff("a", "HIGH"), "Resources": []}).resource == ""  # type: ignore[union-attr]`. The code in brackets limits the silence to the error `union-attr`: the value might be `None` (or another type) that has no such attribute.
+- `tests/unit/detect_respond/test_cli_and_plan.py` line 221: `module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]`. The code in brackets limits the silence to the error `arg-type`: the argument might not have the type the function expects.
+- `tests/unit/detect_respond/test_cli_and_plan.py` line 223: `spec.loader.exec_module(module)  # type: ignore[union-attr]`. The code in brackets limits the silence to the error `union-attr`: the value might be `None` (or another type) that has no such attribute.
+
 ## Try it yourself
 
 ```bash

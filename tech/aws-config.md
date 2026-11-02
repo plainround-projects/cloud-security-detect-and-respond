@@ -74,6 +74,41 @@ From `policy/detection.rego`:
 
 The rule reads: if a Security Hub subscription is planned and no recorder-status resource is, deny. The test `test_security_hub_without_the_config_recorder_is_denied` proves the rule can fire.
 
+### Every argument of every AWS resource in this repository
+
+A Terraform `resource` block describes one thing to create. Inside it, each line `name = value` is an **argument** and each `name { ... }` is a **nested block** (a group of arguments for one part of the resource). The column "Kind" says whether the AWS provider requires the argument, whether it is optional, whether it opens a nested block, or whether it is a Terraform **meta-argument** that works on every resource. In "Kind", `required` and `optional` were read from the provider's own schema (version 6.70.0, the one in the lock file), so they are not guesses. A path such as `rule.expiration.days` means the argument `days` inside the nested block `expiration` inside the nested block `rule`. Names that contain `var.` or `local.` or `module.` are values that come from elsewhere in the code ([terraform.md](terraform.md)).
+
+#### `aws_config_configuration_recorder`
+
+Declared in `infra/modules/posture/main.tf` lines 137 to 145 (`this`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `name` | optional | The name of the recorder. | `var.name` |
+| `recording_group.all_supported` | optional | `true` records every supported resource type in the Region. | `true` |
+| `recording_group.include_global_resource_types` | optional | Also record resource types that are global, such as IAM roles; usually switched on in only one Region. | `true` |
+| `role_arn` | required | The role AWS Config assumes to read the configuration of resources ([aws-iam.md](aws-iam.md)). | `aws_iam_role.config.arn` |
+
+#### `aws_config_configuration_recorder_status`
+
+Declared in `infra/modules/posture/main.tf` lines 154 to 159 (`this`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `is_enabled` | required | Start (`true`) or stop recording. A recorder that exists but is not enabled records nothing. | `true` |
+| `name` | required | The recorder this status belongs to. | `aws_config_configuration_recorder.this.name` |
+| `depends_on` | meta-argument | A Terraform **meta-argument** (it works on every resource and is not sent to AWS): create this resource only after the listed ones. Terraform normally works out the order from references; `depends_on` states an order that no reference shows, for example a policy that must exist before a service first writes. | `[aws_config_delivery_channel.this]` |
+
+#### `aws_config_delivery_channel`
+
+Declared in `infra/modules/posture/main.tf` lines 147 to 152 (`this`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `name` | optional | The name of the delivery channel. | `var.name` |
+| `s3_bucket_name` | required | The bucket where Config writes its snapshots and configuration history. | `aws_s3_bucket.config.bucket` |
+| `depends_on` | meta-argument | A Terraform **meta-argument** (it works on every resource and is not sent to AWS): create this resource only after the listed ones. Terraform normally works out the order from references; `depends_on` states an order that no reference shows, for example a policy that must exist before a service first writes. | `[aws_config_configuration_recorder.this, aws_s3_bucket_policy.config]` |
+
 ## Try it yourself
 
 ```bash

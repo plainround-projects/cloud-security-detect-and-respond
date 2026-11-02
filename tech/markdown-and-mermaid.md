@@ -49,6 +49,141 @@ def review_markdown(drill: Drill, detections: dict[str, tuple[str, str]]) -> str
 
 The function takes the rebuilt drill and returns one long string of Markdown. Because it is a pure function of its inputs, the same archive always gives the same file.
 
+### Every file and every diagram line, one by one
+
+Every Markdown file that is part of the repository, outside this `tech/` folder, with the Markdown features it uses. (Markdown is plain text where a few marks decide how the page looks when shown: see the sections above.) Then every Mermaid diagram, line by line.
+
+| File | Lines | Features used (count of lines) |
+| --- | --- | --- |
+| `ARCHITECTURE.md` | 86 | bold (13), bulleted list (19), code fence (2), heading (7), inline code (31), link (4), numbered list (7), table (21) |
+| `CHANGELOG.md` | 16 | bulleted list (7), heading (3), inline code (2), link (1) |
+| `README.md` | 158 | bold (11), bulleted list (7), code fence (8), heading (10), inline code (20), link (5), table (30) |
+| `docs/DETECTIONS.md` | 26 | bold (5), bulleted list (5), heading (3), inline code (13), link (2), numbered list (3), table (7) |
+| `docs/REHEARSAL_REVIEW.md` | 37 | bulleted list (6), heading (5), inline code (1), table (15) |
+| `docs/RUNBOOK.md` | 91 | bold (7), bulleted list (5), code fence (6), heading (7), inline code (20), table (21) |
+| `docs/adr/0001-detections-are-data-with-one-source-of-truth.md` | 23 | bold (2), bulleted list (5), heading (5), inline code (3) |
+| `docs/adr/0002-the-archive-lives-in-another-account-with-object-lock.md` | 24 | bold (3), bulleted list (6), heading (5), inline code (4) |
+| `docs/adr/0003-contain-sessions-not-only-the-key.md` | 23 | bold (2), bulleted list (5), heading (5), inline code (2) |
+
+The features, each explained once, with the first place it appears:
+
+- A **heading**: one to six `#` signs, a space, then the title. More signs mean a lower level. First in `ARCHITECTURE.md` line 1.
+- A **table**: rows of cells separated by `|`; the second row (`| --- | --- |`) separates the header from the body. First in `ARCHITECTURE.md` line 7.
+- A **fenced code block**: three backticks open it and three close it; the word after the opening ones names the language. First in `ARCHITECTURE.md` line 21.
+- A **bulleted list**: each item starts with `-` (or `*`) and a space. First in `ARCHITECTURE.md` line 48.
+- A **numbered list**: each item starts with a number and a dot. First in `ARCHITECTURE.md` line 38.
+- **Inline code**: text between single backticks is shown in a fixed-width font and not interpreted. First in `ARCHITECTURE.md` line 3.
+- **Bold**: text between double asterisks. First in `ARCHITECTURE.md` line 3.
+- A **link**: the text in square brackets, then the address in round brackets. A relative address points at another file of the repository. First in `ARCHITECTURE.md` line 48.
+
+**Mermaid diagrams.** Mermaid draws a diagram from text that sits in a code block marked `mermaid`. The page viewer (GitHub, for example) turns the text into a picture, so the diagram is plain text in the repository, shows in a diff and cannot go out of date as an image does. This repository has 1 diagram. Every line of each:
+
+The diagram in `ARCHITECTURE.md`:
+
+From `ARCHITECTURE.md` (line 21):
+
+````text
+```mermaid
+````
+
+The opening fence: three backticks and the word `mermaid`. Everything up to the closing fence is diagram text.
+
+From `ARCHITECTURE.md` (line 22):
+
+```text
+flowchart LR
+```
+
+Starts a flowchart. `LR` means left to right: the first boxes are at the left and the arrows lead to the right.
+
+From `ARCHITECTURE.md` (line 23):
+
+```text
+  drill["drill-user (attacker)"] -- "assume role" --> role["Broad role"]
+```
+
+Draws an arrow from `drill` (defined here as a box labelled "drill-user (attacker)") to `role` (defined here as a box labelled "Broad role"), with the label "assume role" written on it.
+
+From `ARCHITECTURE.md` (line 24):
+
+```text
+  role -- "make public" --> data["Data bucket"]
+```
+
+Draws an arrow from `role` (defined earlier) to `data` (defined here as a box labelled "Data bucket"), with the label "make public" written on it.
+
+From `ARCHITECTURE.md` (line 25):
+
+```text
+  role -- "every call" --> trail["Audit trail"]
+```
+
+Draws an arrow from `role` (defined earlier) to `trail` (defined here as a box labelled "Audit trail"), with the label "every call" written on it.
+
+From `ARCHITECTURE.md` (line 26):
+
+```text
+  trail -- "log files + digests" --> archive["Log archive (security account, Object Lock)"]
+```
+
+Draws an arrow from `trail` (defined earlier) to `archive` (defined here as a box labelled "Log archive (security account, Object Lock)"), with the label "log files + digests" written on it.
+
+From `ARCHITECTURE.md` (line 27):
+
+```text
+  trail -- "events" --> rules["Detection rules (EventBridge, per Region)"]
+```
+
+Draws an arrow from `trail` (defined earlier) to `rules` (defined here as a box labelled "Detection rules (EventBridge, per Region)"), with the label "events" written on it.
+
+From `ARCHITECTURE.md` (line 28):
+
+```text
+  rules -- "D1, D2 matched" --> alert["Alert (email)"]
+```
+
+Draws an arrow from `rules` (defined earlier) to `alert` (defined here as a box labelled "Alert (email)"), with the label "D1, D2 matched" written on it.
+
+From `ARCHITECTURE.md` (line 29):
+
+```text
+  alert -- "page" --> responder["Responder"]
+```
+
+Draws an arrow from `alert` (defined earlier) to `responder` (defined here as a box labelled "Responder"), with the label "page" written on it.
+
+From `ARCHITECTURE.md` (line 30):
+
+```text
+  responder -- "contain: deny older sessions, deactivate key" --> role
+```
+
+Draws an arrow from `responder` (defined earlier) to `role` (defined earlier), with the label "contain: deny older sessions, deactivate key" written on it.
+
+From `ARCHITECTURE.md` (line 31):
+
+```text
+  archive -- "synced out" --> tool["detect_respond: scan, timeline, measure, review"]
+```
+
+Draws an arrow from `archive` (defined earlier) to `tool` (defined here as a box labelled "detect_respond: scan, timeline, measure, review"), with the label "synced out" written on it.
+
+From `ARCHITECTURE.md` (line 32):
+
+```text
+  files["detections/*.json"] -- "pattern, unchanged" --> rules
+```
+
+Draws an arrow from `files` (defined here as a box labelled "detections/*.json") to `rules` (defined earlier), with the label "pattern, unchanged" written on it.
+
+From `ARCHITECTURE.md` (line 34):
+
+````text
+```
+````
+
+The closing fence.
+
 ## Try it yourself
 
 ```bash

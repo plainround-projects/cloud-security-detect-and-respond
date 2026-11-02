@@ -94,6 +94,97 @@ From `infra/modules/drill/main.tf`:
 
 The drill's data bucket turns all four switches **off** on purpose: the attacker makes it public (detection D2), and the exercise measures how fast that is noticed. It exists only while `enable_drill` is true, and the OPA rule `Block Public Access` is only relaxed for resources inside the drill module ([opa-rego.md](opa-rego.md)).
 
+### Every argument of every AWS resource in this repository
+
+A Terraform `resource` block describes one thing to create. Inside it, each line `name = value` is an **argument** and each `name { ... }` is a **nested block** (a group of arguments for one part of the resource). The column "Kind" says whether the AWS provider requires the argument, whether it is optional, whether it opens a nested block, or whether it is a Terraform **meta-argument** that works on every resource. In "Kind", `required` and `optional` were read from the provider's own schema (version 6.70.0, the one in the lock file), so they are not guesses. A path such as `rule.expiration.days` means the argument `days` inside the nested block `expiration` inside the nested block `rule`. Names that contain `var.` or `local.` or `module.` are values that come from elsewhere in the code ([terraform.md](terraform.md)).
+
+#### `aws_s3_bucket`
+
+Declared in `infra/modules/drill/main.tf` lines 72 to 83 (`data`); `infra/modules/log-archive/main.tf` lines 8 to 14 (`archive`); `infra/modules/posture/main.tf` lines 6 to 13 (`config`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `bucket` | optional | The name of the bucket. It is unique across all of AWS, which is why the account id appears in it. | `"${var.bucket_prefix}-${var.account_id}"` / `var.bucket_name` / `local.config_bucket` |
+| `force_destroy` | optional | `true` lets `terraform destroy` delete the bucket even if it holds objects. Used only for throw-away data. | `true` / `var.force_destroy` |
+| `object_lock_enabled` | optional | Switch on Object Lock for this bucket. Object Lock stores objects so that they cannot be deleted or overwritten for a set time, and it needs versioning ([aws-s3.md](aws-s3.md)). | `true` |
+| `tags` | optional | Labels, see above. | `{ purpose = "incident-drill" }` |
+
+#### `aws_s3_bucket_lifecycle_configuration`
+
+Declared in `infra/modules/log-archive/main.tf` lines 68 to 91 (`archive`); `infra/modules/posture/main.tf` lines 49 to 72 (`config`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `bucket` | required | The name of the bucket the setting applies to. This resource configures one bucket; the name ties it to that bucket (the bucket itself is a separate `aws_s3_bucket` resource, [aws-s3.md](aws-s3.md)). | `aws_s3_bucket.archive.bucket` / `aws_s3_bucket.config.bucket` |
+| `rule.abort_incomplete_multipart_upload.days_after_initiation` | optional | Throw away the pieces of an upload that never finished after this many days; unfinished pieces are billed otherwise. | `7` |
+| `rule.expiration.days` | optional | Delete the current version of an object this many days after it was created. | `var.expire_days` / `var.retention_days` |
+| `rule.id` | required | A name for the rule. | `"expire-after-retention"` / `"expire-snapshots"` |
+| `rule.noncurrent_version_expiration.noncurrent_days` | required | Delete an old version this many days after it stopped being the current one. | `var.expire_days` / `7` |
+| `rule.status` | required | `Enabled` or `Disabled`. | `"Enabled"` |
+| `depends_on` | meta-argument | A Terraform **meta-argument** (it works on every resource and is not sent to AWS): create this resource only after the listed ones. Terraform normally works out the order from references; `depends_on` states an order that no reference shows, for example a policy that must exist before a service first writes. | `[aws_s3_bucket_versioning.archive]` / `[aws_s3_bucket_versioning.config]` |
+
+#### `aws_s3_bucket_object_lock_configuration`
+
+Declared in `infra/modules/log-archive/main.tf` lines 54 to 65 (`archive`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `bucket` | required | The name of the bucket the setting applies to. This resource configures one bucket; the name ties it to that bucket (the bucket itself is a separate `aws_s3_bucket` resource, [aws-s3.md](aws-s3.md)). | `aws_s3_bucket.archive.bucket` |
+| `rule.default_retention.days` | optional | The number of days each new object is locked. | `var.retention_days` |
+| `rule.default_retention.mode` | optional | `COMPLIANCE`: nobody, including the account owner, can delete or shorten the lock on an object until the period ends. `GOVERNANCE` could be bypassed with a special permission. | `"COMPLIANCE"` |
+| `depends_on` | meta-argument | A Terraform **meta-argument** (it works on every resource and is not sent to AWS): create this resource only after the listed ones. Terraform normally works out the order from references; `depends_on` states an order that no reference shows, for example a policy that must exist before a service first writes. | `[aws_s3_bucket_versioning.archive]` |
+
+#### `aws_s3_bucket_ownership_controls`
+
+Declared in `infra/modules/drill/main.tf` lines 85 to 92 (`data`); `infra/modules/log-archive/main.tf` lines 16 to 22 (`archive`); `infra/modules/posture/main.tf` lines 23 to 29 (`config`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `bucket` | required | The name of the bucket the setting applies to. This resource configures one bucket; the name ties it to that bucket (the bucket itself is a separate `aws_s3_bucket` resource, [aws-s3.md](aws-s3.md)). | `aws_s3_bucket.data.bucket` / `aws_s3_bucket.archive.bucket` / `aws_s3_bucket.config.bucket` |
+| `rule.object_ownership` | required | `BucketOwnerEnforced` switches off ACLs: the bucket owner owns every object and only policies grant access. | `"BucketOwnerPreferred"` / `"BucketOwnerEnforced"` |
+
+#### `aws_s3_bucket_policy`
+
+Declared in `infra/modules/log-archive/main.tf` lines 93 to 136 (`archive`); `infra/modules/posture/main.tf` lines 74 to 92 (`config`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `bucket` | required | The name of the bucket the setting applies to. This resource configures one bucket; the name ties it to that bucket (the bucket itself is a separate `aws_s3_bucket` resource, [aws-s3.md](aws-s3.md)). | `aws_s3_bucket.archive.bucket` / `aws_s3_bucket.config.bucket` |
+| `policy` | required | The bucket policy: a resource policy that says who may do what to the bucket and its objects ([aws-s3.md](aws-s3.md)). | `jsonencode({ Version = "2012-10-17" Statement = [ { Sid = "TrailChe...` / `jsonencode({ Version = "2012-10-17" Statement = [ { Sid = "DenyPlai...` |
+| `depends_on` | meta-argument | A Terraform **meta-argument** (it works on every resource and is not sent to AWS): create this resource only after the listed ones. Terraform normally works out the order from references; `depends_on` states an order that no reference shows, for example a policy that must exist before a service first writes. | `[aws_s3_bucket_public_access_block.archive]` / `[aws_s3_bucket_public_access_block.config]` |
+
+#### `aws_s3_bucket_public_access_block`
+
+Declared in `infra/modules/drill/main.tf` lines 94 to 104 (`data`); `infra/modules/log-archive/main.tf` lines 24 to 30 (`archive`); `infra/modules/posture/main.tf` lines 15 to 21 (`config`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `block_public_acls` | optional | Refuse any request that tries to set a public ACL. | `false` / `true` |
+| `block_public_policy` | optional | Refuse a bucket policy that would make the bucket public. | `false` / `true` |
+| `bucket` | required | The name of the bucket the setting applies to. This resource configures one bucket; the name ties it to that bucket (the bucket itself is a separate `aws_s3_bucket` resource, [aws-s3.md](aws-s3.md)). | `aws_s3_bucket.data.bucket` / `aws_s3_bucket.archive.bucket` / `aws_s3_bucket.config.bucket` |
+| `ignore_public_acls` | optional | Ignore any public ACL that already exists. | `false` / `true` |
+| `restrict_public_buckets` | optional | If a public policy exists anyway, allow only the owner account's identities and AWS services. | `false` / `true` |
+
+#### `aws_s3_bucket_server_side_encryption_configuration`
+
+Declared in `infra/modules/log-archive/main.tf` lines 40 to 51 (`archive`); `infra/modules/posture/main.tf` lines 39 to 47 (`config`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `bucket` | required | The name of the bucket the setting applies to. This resource configures one bucket; the name ties it to that bucket (the bucket itself is a separate `aws_s3_bucket` resource, [aws-s3.md](aws-s3.md)). | `aws_s3_bucket.archive.bucket` / `aws_s3_bucket.config.bucket` |
+| `rule.apply_server_side_encryption_by_default.kms_master_key_id` | optional | Which KMS key encrypts new objects (a key id, ARN or alias). | `var.key_alias_arn` |
+| `rule.apply_server_side_encryption_by_default.sse_algorithm` | required | How new objects are encrypted: `AES256` uses S3-managed keys, `aws:kms` uses a key from KMS. | `"aws:kms"` / `"AES256"` |
+| `rule.bucket_key_enabled` | optional | Use a short-lived key for the bucket, so S3 asks KMS less often (lower cost, fewer log lines). | `true` |
+
+#### `aws_s3_bucket_versioning`
+
+Declared in `infra/modules/log-archive/main.tf` lines 32 to 38 (`archive`); `infra/modules/posture/main.tf` lines 31 to 37 (`config`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `bucket` | required | The name of the bucket the setting applies to. This resource configures one bucket; the name ties it to that bucket (the bucket itself is a separate `aws_s3_bucket` resource, [aws-s3.md](aws-s3.md)). | `aws_s3_bucket.archive.bucket` / `aws_s3_bucket.config.bucket` |
+| `versioning_configuration.status` | required | `Enabled` keeps every version of an object; an overwrite or delete adds a new version instead of destroying the old one. | `"Enabled"` |
+
 ## Try it yourself
 
 ```bash

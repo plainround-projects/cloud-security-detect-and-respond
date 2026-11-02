@@ -62,6 +62,186 @@ The lock file `.terraform.lock.hcl` is *not* ignored: it must be committed so ev
 
 **Commit messages.** The project uses *semantic commits*: a type, a scope, a colon, a summary (`feat(infra): add the hardened workload...`). The body explains why. `git log --oneline` shows the first line of each.
 
+### Every ignore pattern, one by one
+
+A `.gitignore` file lists patterns of files git must not track. A line is a pattern: `*` stands for any run of characters, a trailing `/` means a folder, and a line that starts with `#` is a comment. Each pattern in this repository's file, one by one:
+
+From `.gitignore` (line 1):
+
+```text
+.venv/
+```
+
+The Python virtual environment folder ([pip.md](pip.md)): installed libraries, rebuilt by `make install`. The trailing `/` means "a folder".
+
+From `.gitignore` (line 2):
+
+```text
+__pycache__/
+```
+
+Folders where Python stores compiled copies of modules.
+
+From `.gitignore` (line 3):
+
+```text
+*.pyc
+```
+
+The compiled files themselves. `*` matches any run of characters.
+
+From `.gitignore` (line 4):
+
+```text
+*.egg-info/
+```
+
+Metadata folders that setuptools writes when the project is installed ([setuptools.md](setuptools.md)).
+
+From `.gitignore` (line 5):
+
+```text
+build/
+```
+
+Build output: the Lambda zip and the saved Terraform plans.
+
+From `.gitignore` (line 6):
+
+```text
+dist/
+```
+
+Packages built for release; there are none here, but the folder is the standard output of a build.
+
+From `.gitignore` (line 7):
+
+```text
+.pytest_cache/
+```
+
+pytest's memory of the last run ([pytest.md](pytest.md)).
+
+From `.gitignore` (line 8):
+
+```text
+.mypy_cache/
+```
+
+mypy's saved analysis ([mypy.md](mypy.md)).
+
+From `.gitignore` (line 9):
+
+```text
+.ruff_cache/
+```
+
+ruff's saved results ([ruff.md](ruff.md)).
+
+From `.gitignore` (line 10):
+
+```text
+.import_linter_cache/
+```
+
+import-linter's saved import graph ([import-linter.md](import-linter.md)).
+
+From `.gitignore` (line 11):
+
+```text
+.coverage
+```
+
+The data file coverage.py writes while tests run ([coverage.md](coverage.md)).
+
+From `.gitignore` (line 12):
+
+```text
+.env
+```
+
+A file of personal settings and account values; `.env.example` is the committed template. A real `.env` must never be committed.
+
+From `.gitignore` (line 13):
+
+```text
+.DS_Store
+```
+
+A file macOS Finder creates in folders it has opened.
+
+From `.gitignore` (line 14):
+
+```text
+logs/
+```
+
+Local log output.
+
+From `.gitignore` (line 15):
+
+```text
+.omc/
+```
+
+A folder used by a local assistant tool for its own state.
+
+From `.gitignore` (line 16):
+
+```text
+.terraform/
+```
+
+The folder where `terraform init` downloads the provider plug-ins ([terraform.md](terraform.md)).
+
+From `.gitignore` (line 17):
+
+```text
+*.tfstate
+```
+
+Terraform's record of what it has created. It can contain secret values, so it is never committed.
+
+From `.gitignore` (line 18):
+
+```text
+*.tfstate.*
+```
+
+Backups and copies of that record (`terraform.tfstate.backup`).
+
+From `.gitignore` (line 19):
+
+```text
+*.tfplan
+```
+
+A saved plan file.
+
+From `.gitignore` (line 20):
+
+```text
+crash.log
+```
+
+The file Terraform writes when it crashes; it can contain internal details.
+
+From `.gitignore` (line 21):
+
+```text
+infra/environments/sandbox/sandbox.auto.tfvars
+```
+
+The file the deploy script writes with your real account id and e-mail address; it must not be committed. `.auto.tfvars` files are read by Terraform automatically.
+
+From `.gitignore` (line 22):
+
+```text
+evidence/
+```
+
+The output collected from a real account (logs, timelines, reviews).
+
 ## Try it yourself
 
 ```bash

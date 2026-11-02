@@ -117,7 +117,7 @@ src = ["src", "tests", "scripts"]
 - `target-version = "py312"`: write and check the code as for Python 3.12; ruff may suggest newer syntax that 3.12 allows.
 - `src = ["src", "tests", "scripts"]`: the folders that hold this project's own code. The import-sorting rule uses this list to decide which imports are "first party" (this project) and which are third party, so it can group them correctly.
 
-From `pyproject.toml` (lines 36 to 37):
+From `pyproject.toml` (lines 37 to 38):
 
 ```toml
 [tool.ruff.lint]
@@ -139,7 +139,7 @@ select = ["E", "F", "I", "B", "UP", "SIM", "N", "C4", "RUF", "PT", "S", "D100", 
 - `"S"`: security rules (from bandit), for example a hard-coded password or a call that runs a shell.
 - `"D100"`, `"D101"`, `"D103"`, `"D104"`: docstring rules, selected one at a time. A **docstring** is the text in triple quotes at the top of a module, class or function. D100 requires one on every module, D101 on every public class, D103 on every public function and D104 on every package. (D102, for public methods, is deliberately not selected.)
 
-From `pyproject.toml` (lines 39 to 41):
+From `pyproject.toml` (lines 40 to 42):
 
 ```toml
 [tool.ruff.lint.per-file-ignores]
@@ -152,7 +152,7 @@ From `pyproject.toml` (lines 39 to 41):
 - `"tests/**" = ["D", "S101", "S105", "S106", "S603", "S607"]`: in the tests, `D` (all docstring rules) is skipped because test names already describe the behavior; `S101` is skipped because tests are *supposed* to use `assert`; `S105` and `S106` are skipped because tests contain fake passwords and tokens on purpose; `S603` and `S607` are skipped because a test may start another program (such as `make`) as a sub-process.
 - `"scripts/**" = ["D"]`: the helper scripts under `scripts/` do not need docstrings.
 
-From `pyproject.toml` (lines 43 to 48):
+From `pyproject.toml` (lines 44 to 49):
 
 ```toml
 [tool.mypy]
@@ -170,7 +170,7 @@ mypy_path = ["src"]
 - `files = ["src", "tests", "scripts"]`: what to check when you run plain `mypy` with no arguments.
 - `explicit_package_bases = true` and `mypy_path = ["src"]`: tell mypy that the folder `src/` is the root from which package names start, so the module `detect_respond.domain.x` is found at `src/detect_respond/domain/x.py` and is not confused with a module of the same name elsewhere.
 
-From `pyproject.toml` (lines 50 to 52):
+From `pyproject.toml` (lines 51 to 53):
 
 ```toml
 [[tool.mypy.overrides]]
@@ -180,7 +180,7 @@ ignore_missing_imports = true
 
 This is the first `[[tool.mypy.overrides]]` item. `module` lists the modules it applies to: `boto3` and `botocore` and everything inside them (`boto3.*`, `botocore.*`). `ignore_missing_imports = true` tells mypy not to complain that it cannot find type information for them. The AWS library ships without type hints that mypy can read, so without this line every `import boto3` would be an error. The values that come back from boto3 are treated as `Any`, which is why the code keeps them inside the infrastructure layer ([boto3.md](boto3.md)).
 
-From `pyproject.toml` (lines 54 to 59):
+From `pyproject.toml` (lines 55 to 60):
 
 ```toml
 # Test functions are named for the behavior they check; annotating every one adds noise, not safety.
@@ -195,7 +195,7 @@ The comment line above the header explains the next block: test functions are na
 
 `[[tool.mypy.overrides]]` adds one **override**: settings that apply only to some modules. `module = ["tests.*"]` selects every module in the `tests` package. The three settings `disallow_untyped_defs`, `disallow_incomplete_defs` and `disallow_untyped_calls` are set to `false`, which relaxes three of the strict checks listed above for the tests only. Production code stays fully strict.
 
-From `pyproject.toml` (lines 61 to 67):
+From `pyproject.toml` (lines 62 to 68):
 
 ```toml
 [tool.pytest.ini_options]
@@ -214,7 +214,7 @@ markers = [
 - `pythonpath = ["src", "."]`: extra folders put on Python's import path. `src` lets the tests import the package without installing it first; `.` (the repository root) lets them import `tests.builders`.
 - `markers`: the list of markers that are allowed. The one entry, `e2e`, has its description after the colon, so `pytest --markers` explains it.
 
-From `pyproject.toml` (lines 69 to 71):
+From `pyproject.toml` (lines 70 to 72):
 
 ```toml
 [tool.coverage.run]
@@ -224,7 +224,7 @@ branch = true
 
 `[tool.coverage.run]` configures how coverage is **measured** ([coverage.md](coverage.md)). `source = ["detect_respond"]` limits the measurement to this project's own packages, so libraries and test files are not counted. `branch = true` also records which way each `if` and loop went, not only whether each line ran, so an `if` whose "false" side is never tested shows up.
 
-From `pyproject.toml` (lines 73 to 75):
+From `pyproject.toml` (lines 74 to 76):
 
 ```toml
 [tool.coverage.report]
@@ -234,7 +234,7 @@ skip_covered = false
 
 `[tool.coverage.report]` configures the **report**. `show_missing = true` adds a column that lists the line numbers that never ran. `skip_covered = false` keeps files that are 100 percent covered in the table, so the table lists every file.
 
-From `pyproject.toml` (lines 77 to 79):
+From `pyproject.toml` (lines 78 to 80):
 
 ```toml
 [tool.importlinter]
@@ -244,7 +244,7 @@ include_external_packages = true
 
 `[tool.importlinter]` configures the checker of import rules ([import-linter.md](import-linter.md)). `root_package = "detect_respond"` names the package(s) whose imports are analyzed. `include_external_packages = true` also puts installed libraries (such as `boto3`) into the import graph, which a rule that forbids a library needs.
 
-From `pyproject.toml` (lines 81 to 89):
+From `pyproject.toml` (lines 82 to 90):
 
 ```toml
 [[tool.importlinter.contracts]]
@@ -260,7 +260,7 @@ layers = [
 
 Each `[[tool.importlinter.contracts]]` header adds one **contract**, a rule. `name` is the label printed in the report. `type = "layers"` is a rule about order: `layers` lists packages from highest to lowest, and a higher layer may import a lower one but a lower layer may **never** import a higher one. Here the order is `interfaces` (the command line), `infrastructure` (files and the cloud), `application` (the use cases), `domain` (the rules). So the domain cannot import anything from the other three, and nothing may import the interfaces.
 
-From `pyproject.toml` (lines 91 to 95):
+From `pyproject.toml` (lines 92 to 96):
 
 ```toml
 [[tool.importlinter.contracts]]

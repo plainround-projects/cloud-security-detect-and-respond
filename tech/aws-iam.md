@@ -97,6 +97,60 @@ From `policy/detection.rego`:
 
 Tenants of this lesson use roles. An IAM user (the source of long-lived keys) is allowed in the plan only inside `module.drill`, and the user's access key is never created by Terraform, because it would sit in the state file: `scripts/04-drill-setup.sh` creates it and stores it only in the AWS CLI profile `drill`.
 
+### Every argument of every AWS resource in this repository
+
+A Terraform `resource` block describes one thing to create. Inside it, each line `name = value` is an **argument** and each `name { ... }` is a **nested block** (a group of arguments for one part of the resource). The column "Kind" says whether the AWS provider requires the argument, whether it is optional, whether it opens a nested block, or whether it is a Terraform **meta-argument** that works on every resource. In "Kind", `required` and `optional` were read from the provider's own schema (version 6.70.0, the one in the lock file), so they are not guesses. A path such as `rule.expiration.days` means the argument `days` inside the nested block `expiration` inside the nested block `rule`. Names that contain `var.` or `local.` or `module.` are values that come from elsewhere in the code ([terraform.md](terraform.md)).
+
+#### `aws_iam_role`
+
+Declared in `infra/modules/drill/main.tf` lines 31 to 46 (`broad`); `infra/modules/posture/main.tf` lines 94 to 106 (`config`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `assume_role_policy` | required | The **trust policy**: who may assume the role ([aws-sts.md](aws-sts.md)). The role's permissions are separate. | `jsonencode({ Version = "2012-10-17" Statement = [{ Sid = "OnlyTheDr...` / `jsonencode({ Version = "2012-10-17" Statement = [{ Effect = "Allow"...` |
+| `name` | optional | The name of the role; it appears in the role's ARN. | `var.role_name` / `"${var.name}-config-recorder"` |
+| `tags` | optional | Labels (key and value text) attached to the resource. They cost nothing and do nothing by themselves; people and scripts find and group resources by them, and the provider's `default_tags` add the project-wide ones. | `{ purpose = "incident-drill" }` |
+| `depends_on` | meta-argument | A Terraform **meta-argument** (it works on every resource and is not sent to AWS): create this resource only after the listed ones. Terraform normally works out the order from references; `depends_on` states an order that no reference shows, for example a policy that must exist before a service first writes. | `[aws_iam_user.drill]` |
+
+#### `aws_iam_role_policy`
+
+Declared in `infra/modules/drill/main.tf` lines 56 to 69 (`mint_a_key_for_the_drill_user`); `infra/modules/posture/main.tf` lines 113 to 135 (`deliver`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `name` | optional | The name of this inline policy within the role. | `"create-access-key-for-the-drill-user"` / `"deliver-to-the-config-bucket"` |
+| `policy` | required | The permissions, as JSON text: what the role may do. See [aws-iam.md](aws-iam.md). | `jsonencode({ Version = "2012-10-17" Statement = [{ Sid = "CreateAKe...` / `jsonencode({ Version = "2012-10-17" Statement = [ { Sid = "CheckThe...` |
+| `role` | required | The role the policy is embedded in (by name). | `aws_iam_role.broad.name` / `aws_iam_role.config.name` |
+
+#### `aws_iam_role_policy_attachment`
+
+Declared in `infra/modules/drill/main.tf` lines 49 to 52 (`power_user`); `infra/modules/posture/main.tf` lines 108 to 111 (`config`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `policy_arn` | required | The ARN of an existing managed policy (one that is not embedded in the role). | `"arn:aws:iam::aws:policy/PowerUserAccess"` / `"arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"` |
+| `role` | required | The role to attach the managed policy to. | `aws_iam_role.broad.name` / `aws_iam_role.config.name` |
+
+#### `aws_iam_user`
+
+Declared in `infra/modules/drill/main.tf` lines 8 to 12 (`drill`); `infra/modules/drill/main.tf` lines 108 to 114 (`honeytoken`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `name` | required | The name of the IAM user (a long-lived identity, used here only for the drill). | `var.user_name` / `"honeytoken-svc"` |
+| `tags` | optional | Labels (key and value text) attached to the resource. They cost nothing and do nothing by themselves; people and scripts find and group resources by them, and the provider's `default_tags` add the project-wide ones. | `{ purpose = "incident-drill" }` / `{ purpose = "honeytoken" }` |
+| `count` | meta-argument | A Terraform meta-argument: make this many copies (here 0 or 1, which switches the resource on or off with a variable). | `var.enable_honeytoken ? 1 : 0` |
+
+#### `aws_iam_user_policy`
+
+Declared in `infra/modules/drill/main.tf` lines 15 to 29 (`assume_broad_role`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `name` | optional | The name of the inline policy. | `"assume-the-drill-role"` |
+| `policy` | required | The policy document as JSON text, written in HCL with `jsonencode(...)` ([json.md](json.md)). | `jsonencode({ Version = "2012-10-17" Statement = [{ Sid = "AssumeOnl...` |
+| `user` | required | The user the policy is embedded in. | `aws_iam_user.drill.name` |
+
 ## Try it yourself
 
 ```bash

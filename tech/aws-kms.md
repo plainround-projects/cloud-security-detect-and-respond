@@ -74,6 +74,30 @@ From `infra/modules/log-archive/main.tf`:
 
 The archive encrypts every object with this key, named by alias ([aws-s3.md](aws-s3.md)). The OPA rule `the archive must be encrypted with a customer-managed key` checks it.
 
+### Every argument of every AWS resource in this repository
+
+A Terraform `resource` block describes one thing to create. Inside it, each line `name = value` is an **argument** and each `name { ... }` is a **nested block** (a group of arguments for one part of the resource). The column "Kind" says whether the AWS provider requires the argument, whether it is optional, whether it opens a nested block, or whether it is a Terraform **meta-argument** that works on every resource. In "Kind", `required` and `optional` were read from the provider's own schema (version 6.70.0, the one in the lock file), so they are not guesses. A path such as `rule.expiration.days` means the argument `days` inside the nested block `expiration` inside the nested block `rule`. Names that contain `var.` or `local.` or `module.` are values that come from elsewhere in the code ([terraform.md](terraform.md)).
+
+#### `aws_kms_alias`
+
+Declared in `infra/modules/kms-key/main.tf` lines 26 to 29 (`this`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `name` | optional | The friendly name, which must start with `alias/`. Code refers to the alias instead of the key id. | `"alias/${var.alias}"` |
+| `target_key_id` | required | The key the alias points to. | `aws_kms_key.this.key_id` |
+
+#### `aws_kms_key`
+
+Declared in `infra/modules/kms-key/main.tf` lines 19 to 24 (`this`).
+
+| Argument | Kind | What it means | Value in this repository |
+| --- | --- | --- | --- |
+| `deletion_window_in_days` | optional | How long a deleted key waits, unusable but recoverable, before it is really removed. The shortest AWS allows is 7. | `var.deletion_window_in_days` |
+| `description` | optional | A sentence for people: what the key protects. | `var.description` |
+| `enable_key_rotation` | optional | Let AWS create new key material every year. Old data stays readable (the key keeps the old material) and new data uses the new. | `true` |
+| `policy` | optional | The **key policy**: who may use and who may administer the key ([aws-kms.md](aws-kms.md)). A key is unusable by anyone this policy does not allow, even an account administrator. | `jsonencode({ Version = "2012-10-17", Statement = concat([local.admi...` |
+
 ## Try it yourself
 
 ```bash
