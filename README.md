@@ -9,6 +9,24 @@ The detection-and-response layer for a sandbox cloud account, as code: every act
 | **Level** | Advanced |
 | **Architecture** | [ARCHITECTURE.md](ARCHITECTURE.md); detections: [docs/DETECTIONS.md](docs/DETECTIONS.md); the rehearsal's review: [docs/REHEARSAL_REVIEW.md](docs/REHEARSAL_REVIEW.md); account runbook: [docs/RUNBOOK.md](docs/RUNBOOK.md); decisions: [docs/adr](docs/adr) |
 
+## Architecture
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/architecture-dark.svg">
+  <img alt="In the workload account the drill-user assumes the broad role and makes the data bucket public; the audit trail sends every call to a log archive in a separate security account and to the detection rules, which alert the responder, and the detect_respond tool replays the same detections over the archive." src="docs/diagrams/architecture.svg">
+</picture>
+
+Notice that the archive lives in another account under Object Lock, and that the detections in detections/*.json are the one thing both the rules and the tool read.
+
+## How one run flows
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/flow-dark.svg">
+  <img alt="One rehearsal scans the archive for alerts, rebuilds the timeline, measures the clock, verifies the digests, builds the posture baseline, plans containment and writes the review, all from the logs alone." src="docs/diagrams/flow.svg">
+</picture>
+
+The run ends with a review and the two measures, detect 32 s and contain 6 min 52 s; the amber row shows that containment is not confirmed if the attacker never calls again.
+
 ## Prerequisites
 
 | Tool | Version | Used for |

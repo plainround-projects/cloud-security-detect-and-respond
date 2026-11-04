@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="780" viewBox="0 0 1200 780" role="img" aria-labelledby="t d">
+<title id="t">One rehearsal, from logs alone</title>
+<desc id="d">A numbered run of make demo-drill across five lanes: Responder, detect_respond, Log archive, Findings files and IAM. The scan reads every log file and six alerts fire from D1, D2 and D4 (1). The drill rebuilds the timeline from the session name intruder, denied calls included (2). The measure takes the first attacker call as time zero and finds 32 seconds to detect and 6 minutes 52 seconds to contain (3); if the attacker never calls again, containment is not confirmed (3x). Verify-archive checks the digests, three files and none changed (4). Posture builds the baseline from two findings files (5). Contain prints a dry-run plan for the IAM port (6). The review writes an event id on every claim (7).</desc>
+<style>
+:root{--paper:#ffffff;--ink:#10243d;--mute:#52677f;--accent:#0a6aa8;--good:#19743f;--warn:#8a5a00}
+text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;fill:var(--ink)}
+.title{font-family:Georgia,'Iowan Old Style','Times New Roman',serif;font-size:36px}
+.caption{font-size:16px;fill:var(--mute)}
+.name{font-size:20px;font-weight:600}
+.lane{font-size:17px;font-weight:600}
+.sub{font-size:15px;fill:var(--mute)}
+.label{font-size:15px}
+.tag{font-size:15px;fill:var(--mute)}
+.num{font-size:15px;font-weight:700;fill:var(--paper)}
+.legend{font-size:14px;fill:var(--mute)}
+.t-accent{fill:var(--accent)}
+.t-good{fill:var(--good)}
+.t-warn{fill:var(--warn)}
+.t-ink{fill:var(--ink)}
+.b{font-weight:600}
+.paper{fill:var(--paper);stroke:var(--mute);stroke-opacity:.3}
+.grid{fill:url(#grid)}
+.boundary{fill:var(--mute);fill-opacity:.035;stroke:var(--mute);stroke-opacity:.7;stroke-dasharray:6 5}
+.svc{fill:var(--accent);fill-opacity:.08;stroke:var(--accent);stroke-width:1.25}
+.store{fill:var(--mute);fill-opacity:.1;stroke:var(--mute);stroke-width:1.25}
+.rim{fill:none;stroke:var(--mute);stroke-width:1.25}
+.actor{fill:none;stroke:var(--mute);stroke-width:1.25}
+.slot{fill:var(--accent);fill-opacity:.14;stroke:var(--accent);stroke-width:1}
+.note{fill:var(--warn);fill-opacity:.09;stroke:var(--warn);stroke-width:1}
+.win{fill:var(--good);fill-opacity:.09;stroke:var(--good);stroke-width:1}
+.hair{fill:none;stroke:var(--mute);stroke-opacity:.4;stroke-width:1}
+.zone{fill:var(--accent);fill-opacity:.045;stroke:var(--accent);stroke-width:1.25;stroke-dasharray:6 5}
+.stop{fill:none;stroke:var(--warn);stroke-width:4;stroke-linecap:round}
+.mask{fill:var(--paper)}
+.sync,.async,.read,.fail,.ok{fill:none}
+.sync{stroke:var(--accent);stroke-width:1.75;marker-end:url(#a-sync)}
+.async{stroke:var(--accent);stroke-width:1.75;stroke-dasharray:8 6;marker-end:url(#a-async)}
+.read{stroke:var(--mute);stroke-width:1.75;stroke-linecap:round;stroke-dasharray:1 6;marker-end:url(#a-read)}
+.fail{stroke:var(--warn);stroke-width:2;marker-end:url(#a-fail)}
+.ok{stroke:var(--good);stroke-width:1.75;marker-end:url(#a-ok)}
+.dot{fill:var(--accent)}
+.dot-w{fill:var(--warn)}
+.dot-g{fill:var(--good)}
+.head-sync,.head-async{stroke:var(--accent)}
+.head-sync{fill:var(--accent)}
+.head-async,.head-read{fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.head-read{stroke:var(--mute)}
+.head-fail{fill:var(--warn)}
+.head-ok{fill:var(--good)}
+.gridline{fill:none;stroke:var(--mute);stroke-opacity:.09}
+</style>
+<defs>
+<pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path class="gridline" d="M40 0H0V40"/></pattern>
+<marker id="a-sync" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="head-sync" d="M0 0L10 5L0 10z"/></marker>
+<marker id="a-async" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="head-async" d="M1 1L9 5L1 9"/></marker>
+<marker id="a-read" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="head-read" d="M1 1L9 5L1 9"/></marker>
+<marker id="a-fail" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="head-fail" d="M0 0L10 5L0 10z"/></marker>
+<marker id="a-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="head-ok" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<rect class="paper" x="0.5" y="0.5" width="1199" height="779" rx="16"/>
+<rect class="grid" x="1" y="1" width="1198" height="778" rx="16"/>
+<text class="title" x="48" y="68">One rehearsal, from logs alone</text>
+<text class="caption" x="48" y="100">The rehearsal reads the archive only. Amber: containment is not confirmed without a later attacker call.</text>
+<rect class="actor" x="390" y="128" width="120" height="48" rx="24"/>
+<text class="lane" x="450" y="158" text-anchor="middle">Responder</text>
+<rect class="svc" x="535" y="128" width="170" height="48" rx="10"/>
+<text class="lane" x="620" y="158" text-anchor="middle">detect_respond</text>
+<rect class="svc" x="720" y="128" width="120" height="48" rx="10"/>
+<text class="lane" x="780" y="148" text-anchor="middle">Log</text>
+<text class="lane" x="780" y="168" text-anchor="middle">archive</text>
+<rect class="svc" x="870" y="128" width="120" height="48" rx="10"/>
+<text class="lane" x="930" y="148" text-anchor="middle">Findings</text>
+<text class="lane" x="930" y="168" text-anchor="middle">files</text>
+<rect class="svc" x="1025" y="128" width="120" height="48" rx="10"/>
+<text class="lane" x="1085" y="158" text-anchor="middle">IAM</text>
+<path class="hair" d="M450 176V680M620 176V680M780 176V488M930 176V552M1085 176V616"/>
+<path class="hair" d="M66 216V664"/>
+<circle class="dot" cx="66" cy="216" r="15"/><text class="num" x="66" y="221" text-anchor="middle">1</text>
+<text class="label b t-ink" x="96" y="212">scan reads the archive</text>
+<text class="sub" x="96" y="232">6 alerts: D1, D2, D4 fire</text>
+<path class="sync" d="M450 216H620"/>
+<text class="label t-accent" x="466" y="206">scan</text>
+<path class="read" d="M780 216H620"/>
+<text class="label" x="636" y="206">log files</text>
+<circle class="dot" cx="66" cy="280" r="15"/><text class="num" x="66" y="285" text-anchor="middle">2</text>
+<text class="label b t-ink" x="96" y="276">drill rebuilds the timeline</text>
+<text class="sub" x="96" y="296">session intruder, denied too</text>
+<rect class="slot" x="614" y="262" width="12" height="36" rx="4"/>
+<text class="label t-accent" x="636" y="285">intruder</text>
+<circle class="dot" cx="66" cy="344" r="15"/><text class="num" x="66" y="349" text-anchor="middle">3</text>
+<text class="label b t-ink" x="96" y="340">measure starts the clock</text>
+<text class="sub" x="96" y="360">first attacker call = time zero</text>
+<rect class="slot" x="614" y="326" width="12" height="36" rx="4"/>
+<text class="label t-accent" x="636" y="349">time zero</text>
+<circle class="dot-w" cx="66" cy="408" r="15"/><text class="num" x="66" y="413" text-anchor="middle">3x</text>
+<text class="label b t-warn" x="96" y="404">No later attacker call</text>
+<text class="sub" x="96" y="424">containment not confirmed</text>
+<rect class="slot" x="614" y="390" width="12" height="36" rx="4"/>
+<text class="label t-warn" x="636" y="413">not confirmed</text>
+<circle class="dot" cx="66" cy="472" r="15"/><text class="num" x="66" y="477" text-anchor="middle">4</text>
+<text class="label b t-ink" x="96" y="468">verify-archive checks digests</text>
+<text class="sub" x="96" y="488">3 files checked, 0 changed</text>
+<path class="read" d="M780 472H620"/>
+<text class="label" x="636" y="462">0 changed</text>
+<circle class="dot" cx="66" cy="536" r="15"/><text class="num" x="66" y="541" text-anchor="middle">5</text>
+<text class="label b t-ink" x="96" y="532">posture builds the baseline</text>
+<text class="sub" x="96" y="552">fails on an unfixed critical</text>
+<path class="read" d="M930 536H620"/>
+<text class="label" x="800" y="526">findings</text>
+<circle class="dot" cx="66" cy="600" r="15"/><text class="num" x="66" y="605" text-anchor="middle">6</text>
+<text class="label b t-ink" x="96" y="596">contain prints the plan</text>
+<text class="sub" x="96" y="616">dry run unless --apply</text>
+<path class="sync" d="M620 600H1085"/>
+<text class="label t-accent" x="946" y="590">dry run</text>
+<circle class="dot-g" cx="66" cy="664" r="15"/><text class="num" x="66" y="669" text-anchor="middle">7</text>
+<text class="label b t-ink" x="96" y="660">review writes the record</text>
+<text class="sub" x="96" y="680">an event id on every claim</text>
+<path class="ok" d="M620 664H450"/>
+<text class="label t-good" x="466" y="654">review</text>
+<rect class="win" x="640" y="644" width="312" height="40" rx="10"/>
+<text class="label b t-good" x="656" y="669">detect 32 s, contain 6 min 52 s</text>
+<path class="sync" d="M48 736H112"/><text class="legend" x="124" y="741">sync call</text>
+<path class="read" d="M520 736H584"/><text class="legend" x="596" y="741">read</text>
+<path class="fail" d="M696 736H760"/><text class="legend" x="772" y="741">failure path</text>
+<path class="ok" d="M928 736H992"/><text class="legend" x="1004" y="741">result</text>
+</svg>

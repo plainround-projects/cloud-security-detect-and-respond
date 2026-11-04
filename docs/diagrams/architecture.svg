@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="860" viewBox="0 0 1200 860" role="img" aria-labelledby="t d">
+<title id="t">Detect and respond, as code</title>
+<desc id="d">In the workload account, the drill-user assumes the broad role drill-broad-role, which makes the data bucket public. Every call goes to the audit trail, which delivers log files and digests to the log archive in a separate security account, under Object Lock. The trail also feeds the detection rules, one EventBridge rule per detection per Region, which send an alert to the responder. The responder contains by denying older sessions of the role and stopping the key. The detections in detections/*.json are the pattern of the rules and the same pattern that the detect_respond tool replays over the archive, with the timeline, the measures and the review. Posture management with Config and Security Hub sits in the workload account. A warning note names make demo-drill.</desc>
+<style>
+:root{--paper:#ffffff;--ink:#10243d;--mute:#52677f;--accent:#0a6aa8;--good:#19743f;--warn:#8a5a00}
+text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;fill:var(--ink)}
+.title{font-family:Georgia,'Iowan Old Style','Times New Roman',serif;font-size:36px}
+.caption{font-size:16px;fill:var(--mute)}
+.name{font-size:20px;font-weight:600}
+.lane{font-size:17px;font-weight:600}
+.sub{font-size:15px;fill:var(--mute)}
+.label{font-size:15px}
+.tag{font-size:15px;fill:var(--mute)}
+.num{font-size:15px;font-weight:700;fill:var(--paper)}
+.legend{font-size:14px;fill:var(--mute)}
+.t-accent{fill:var(--accent)}
+.t-good{fill:var(--good)}
+.t-warn{fill:var(--warn)}
+.t-ink{fill:var(--ink)}
+.b{font-weight:600}
+.paper{fill:var(--paper);stroke:var(--mute);stroke-opacity:.3}
+.grid{fill:url(#grid)}
+.boundary{fill:var(--mute);fill-opacity:.035;stroke:var(--mute);stroke-opacity:.7;stroke-dasharray:6 5}
+.svc{fill:var(--accent);fill-opacity:.08;stroke:var(--accent);stroke-width:1.25}
+.store{fill:var(--mute);fill-opacity:.1;stroke:var(--mute);stroke-width:1.25}
+.rim{fill:none;stroke:var(--mute);stroke-width:1.25}
+.actor{fill:none;stroke:var(--mute);stroke-width:1.25}
+.slot{fill:var(--accent);fill-opacity:.14;stroke:var(--accent);stroke-width:1}
+.note{fill:var(--warn);fill-opacity:.09;stroke:var(--warn);stroke-width:1}
+.win{fill:var(--good);fill-opacity:.09;stroke:var(--good);stroke-width:1}
+.hair{fill:none;stroke:var(--mute);stroke-opacity:.4;stroke-width:1}
+.zone{fill:var(--accent);fill-opacity:.045;stroke:var(--accent);stroke-width:1.25;stroke-dasharray:6 5}
+.stop{fill:none;stroke:var(--warn);stroke-width:4;stroke-linecap:round}
+.mask{fill:var(--paper)}
+.sync,.async,.read,.fail,.ok{fill:none}
+.sync{stroke:var(--accent);stroke-width:1.75;marker-end:url(#a-sync)}
+.async{stroke:var(--accent);stroke-width:1.75;stroke-dasharray:8 6;marker-end:url(#a-async)}
+.read{stroke:var(--mute);stroke-width:1.75;stroke-linecap:round;stroke-dasharray:1 6;marker-end:url(#a-read)}
+.fail{stroke:var(--warn);stroke-width:2;marker-end:url(#a-fail)}
+.ok{stroke:var(--good);stroke-width:1.75;marker-end:url(#a-ok)}
+.dot{fill:var(--accent)}
+.dot-w{fill:var(--warn)}
+.dot-g{fill:var(--good)}
+.head-sync,.head-async{stroke:var(--accent)}
+.head-sync{fill:var(--accent)}
+.head-async,.head-read{fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.head-read{stroke:var(--mute)}
+.head-fail{fill:var(--warn)}
+.head-ok{fill:var(--good)}
+.gridline{fill:none;stroke:var(--mute);stroke-opacity:.09}
+</style>
+<defs>
+<pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path class="gridline" d="M40 0H0V40"/></pattern>
+<marker id="a-sync" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="head-sync" d="M0 0L10 5L0 10z"/></marker>
+<marker id="a-async" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="head-async" d="M1 1L9 5L1 9"/></marker>
+<marker id="a-read" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="head-read" d="M1 1L9 5L1 9"/></marker>
+<marker id="a-fail" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="head-fail" d="M0 0L10 5L0 10z"/></marker>
+<marker id="a-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="head-ok" d="M0 0L10 5L0 10z"/></marker>
+</defs>
+<rect class="paper" x="0.5" y="0.5" width="1199" height="859" rx="16"/>
+<rect class="grid" x="1" y="1" width="1198" height="858" rx="16"/>
+<text class="title" x="48" y="68">Detect and respond, as code</text>
+<text class="caption" x="48" y="100">The attacker path is amber. The archive sits in another account, so no one in the workload account can edit it.</text>
+<rect class="actor" x="48" y="186" width="168" height="72" rx="36"/>
+<text class="name" x="132" y="218" text-anchor="middle">drill-user</text>
+<text class="sub" x="132" y="240" text-anchor="middle">assumes the role</text>
+<rect class="boundary" x="272" y="132" width="560" height="640" rx="14"/>
+<text class="tag" x="288" y="160">Workload account (sandbox)</text>
+<rect class="svc" x="296" y="184" width="180" height="112" rx="12"/>
+<text class="name" x="312" y="216">Broad role</text>
+<text class="sub" x="312" y="240">drill-broad-role</text>
+<text class="sub" x="312" y="262">PowerUserAccess</text>
+<rect class="svc" x="584" y="184" width="200" height="112" rx="12"/>
+<text class="name" x="600" y="216">Audit trail</text>
+<text class="sub" x="600" y="240">multi-region</text>
+<text class="sub" x="600" y="262">validation digests</text>
+<path class="store" d="M296 352a108 12 0 0 1 216 0v76a108 12 0 0 1 -216 0z"/>
+<path class="rim" d="M296 352a108 12 0 0 0 216 0"/>
+<text class="name" x="404" y="384" text-anchor="middle">Data bucket</text>
+<text class="sub" x="404" y="406" text-anchor="middle">drill-data-&lt;account&gt;</text>
+<rect class="svc" x="584" y="340" width="224" height="96" rx="12"/>
+<text class="name" x="600" y="372">Detection rules</text>
+<text class="sub" x="600" y="396">EventBridge rules</text>
+<text class="sub" x="600" y="418">one per Region</text>
+<rect class="svc" x="584" y="520" width="224" height="84" rx="12"/>
+<text class="name" x="600" y="552">Alert</text>
+<text class="sub" x="600" y="576">topic, email</text>
+<rect class="svc" x="296" y="664" width="264" height="84" rx="12"/>
+<text class="name" x="312" y="696">Posture</text>
+<text class="sub" x="312" y="720">Config, Security Hub</text>
+<rect class="boundary" x="904" y="132" width="248" height="198" rx="14"/>
+<text class="tag" x="920" y="160">Security account</text>
+<path class="store" d="M920 196a108 12 0 0 1 216 0v98a108 12 0 0 1 -216 0z"/>
+<path class="rim" d="M920 196a108 12 0 0 0 216 0"/>
+<text class="name" x="1028" y="228" text-anchor="middle">Log archive</text>
+<text class="sub" x="1028" y="250" text-anchor="middle">Object Lock</text>
+<text class="sub" x="1028" y="272" text-anchor="middle">KMS key, no deletes</text>
+<rect class="svc" x="904" y="370" width="248" height="112" rx="12"/>
+<text class="name" x="920" y="402">detect_respond</text>
+<text class="sub" x="920" y="426">scan, timeline, measure,</text>
+<text class="sub" x="920" y="448">contain, review</text>
+<path class="store" d="M904 552a124 12 0 0 1 248 0v76a124 12 0 0 1 -248 0z"/>
+<path class="rim" d="M904 552a124 12 0 0 0 248 0"/>
+<text class="name" x="1028" y="584" text-anchor="middle">detections/*.json</text>
+<text class="sub" x="1028" y="606" text-anchor="middle">pattern, unchanged</text>
+<rect class="actor" x="48" y="526" width="168" height="72" rx="36"/>
+<text class="name" x="132" y="558" text-anchor="middle">Responder</text>
+<text class="sub" x="132" y="580" text-anchor="middle">the person</text>
+<rect class="note" x="48" y="640" width="208" height="98" rx="10"/>
+<text class="label b t-warn" x="64" y="670">make demo-drill</text>
+<text class="sub" x="64" y="696">detect: 32 s</text>
+<text class="sub" x="64" y="718">contain: 6 min 52 s</text>
+<path class="fail" d="M216 222H296"/>
+<path class="sync" d="M476 240H584"/>
+<text class="label t-accent" x="486" y="230">every call</text>
+<path class="fail" d="M386 296V340"/>
+<text class="label t-warn" x="398" y="326">make public</text>
+<path class="sync" d="M684 296V340"/>
+<text class="label t-accent" x="696" y="326">events</text>
+<path class="sync" d="M696 436V520"/>
+<text class="label t-accent" x="708" y="484">matched</text>
+<path class="sync" d="M584 562H216"/>
+<text class="label t-accent" x="400" y="552">page</text>
+<path class="sync" d="M132 526V290Q132 278 144 278H296"/>
+<text class="label t-accent" x="142" y="380">contain:</text>
+<text class="label t-accent" x="142" y="402">deny sessions</text>
+<text class="label t-accent" x="142" y="424">stop the key</text>
+<path class="async" d="M784 240H920"/>
+<text class="label t-accent" x="792" y="230">logs</text>
+<path class="read" d="M1028 306V370"/>
+<text class="label" x="1040" y="352">synced out</text>
+<path class="read" d="M1028 540V482"/>
+<path class="read" d="M904 590H872Q860 590 860 578V400Q860 388 848 388H808"/>
+<path class="sync" d="M48 816H112"/><text class="legend" x="124" y="821">sync call</text>
+<path class="async" d="M264 816H328"/><text class="legend" x="340" y="821">async message</text>
+<path class="read" d="M520 816H584"/><text class="legend" x="596" y="821">read</text>
+<path class="fail" d="M696 816H760"/><text class="legend" x="772" y="821">failure path</text>
+</svg>

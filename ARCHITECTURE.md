@@ -18,6 +18,8 @@ The repository holds the **layer in the account** (Terraform: a tamper-resistant
 
 ## Data flow
 
+Drawn versions of this figure and of the walk-through: [the architecture](docs/diagrams/architecture.svg) and [one run](docs/diagrams/flow.svg).
+
 ```mermaid
 flowchart LR
   drill["drill-user (attacker)"] -- "assume role" --> role["Broad role"]
