@@ -27,7 +27,7 @@ flowchart LR
   role -- "every call" --> trail["Audit trail"]
   trail -- "log files + digests" --> archive["Log archive (security account, Object Lock)"]
   trail -- "events" --> rules["Detection rules (EventBridge, per Region)"]
-  rules -- "D1, D2 matched" --> alert["Alert (email)"]
+  rules -- "D1, D2, D4 matched" --> alert["Alert (email)"]
   alert -- "page" --> responder["Responder"]
   responder -- "contain: deny older sessions, deactivate key" --> role
   archive -- "synced out" --> tool["detect_respond: scan, timeline, measure, review"]
